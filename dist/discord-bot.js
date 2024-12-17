@@ -40,7 +40,6 @@ const commands = [
     },
 ];
 const rest = new discord_js_1.REST({ version: '9' }).setToken(process.env.DISCORD_BOT_TOKEN || '');
-console.log(`Authenticating with token: ${process.env.DISCORD_BOT_TOKEN}`);
 exports.bot.login(process.env.DISCORD_BOT_TOKEN).then(() => {
     var _a;
     (_a = exports.bot.user) === null || _a === void 0 ? void 0 : _a.setPresence({

@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Ticket } from "../models/Ticket";
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = Router();
 
