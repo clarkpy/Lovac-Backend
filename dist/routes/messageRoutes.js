@@ -56,6 +56,7 @@ router.post('/new-message', (req, res) => __awaiter(void 0, void 0, void 0, func
         message.authorAvatar = staffData.discordAvatar;
         message.createdAt = Date.now();
         message.ticket = ticket;
+        message.staffRole = staffData.discordRole;
         yield data_source_1.AppDataSource.manager.save(message);
         const embed = new discord_js_1.EmbedBuilder()
             .setColor('#0099ff')
@@ -101,7 +102,7 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
             let discordMessages = [];
             if (channel && channel.isTextBased()) {
                 const messages = yield channel.messages.fetch({ limit: 100 });
-                discordMessages = yield Promise.all(messages.map((msg) => __awaiter(void 0, void 0, void 0, function* () {
+                discordMessages = yield Promise.all(messages.filter(msg => !msg.author.bot).map((msg) => __awaiter(void 0, void 0, void 0, function* () {
                     const member = msg.member;
                     const isStaff = (member === null || member === void 0 ? void 0 : member.roles.cache.some((role) => role.name === "Ticket Staff")) || false;
                     const isAdmin = (member === null || member === void 0 ? void 0 : member.permissions.has(discord_js_1.PermissionsBitField.Flags.Administrator)) || false;
@@ -114,7 +115,8 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
                         isAdmin,
                         date: msg.createdAt,
                         authorAvatar: msg.author.displayAvatarURL(),
-                        createdAt: msg.createdTimestamp
+                        createdAt: msg.createdTimestamp,
+                        staffRole: ""
                     };
                 })));
             }

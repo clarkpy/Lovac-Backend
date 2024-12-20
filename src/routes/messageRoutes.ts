@@ -51,6 +51,7 @@ router.post('/new-message', async (req: Request, res: Response) => {
         message.authorAvatar = staffData.discordAvatar;
         message.createdAt = Date.now();
         message.ticket = ticket;
+        message.staffRole = staffData.discordRole;
 
         await AppDataSource.manager.save(message);
 
@@ -117,12 +118,13 @@ router.post('/messages', async (req: Request, res: Response) => {
                 date: Date;
                 authorAvatar: string;
                 createdAt: number;
+                staffRole: string
             }[] = [];
 
             if (channel && channel.isTextBased()) {
                 const messages = await (channel as TextChannel).messages.fetch({ limit: 100 });
 
-                discordMessages = await Promise.all(messages.map(async msg => {
+                discordMessages = await Promise.all(messages.filter(msg => !msg.author.bot).map(async msg => {
                     const member = msg.member;
                     
                     const isStaff = member?.roles.cache.some((role) => role.name === "Ticket Staff") || false;
@@ -137,7 +139,8 @@ router.post('/messages', async (req: Request, res: Response) => {
                         isAdmin,
                         date: msg.createdAt,
                         authorAvatar: msg.author.displayAvatarURL(),
-                        createdAt: msg.createdTimestamp
+                        createdAt: msg.createdTimestamp,
+                        staffRole: ""
                     };
                 }));
             }
