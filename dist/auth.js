@@ -66,18 +66,21 @@ passport_1.default.use(new passport_discord_1.Strategy({
             if (isStaff) {
                 const staffMember = yield data_source_1.AppDataSource.manager.findOne(Staff_1.Staff, { where: { discordId: profile.id } });
                 if (!staffMember) {
-                    ;
                     const newStaff = new Staff_1.Staff();
                     newStaff.discordId = profile.id;
                     newStaff.discordUsername = profile.username;
                     newStaff.discordDisplayName = (_b = (_a = profile.displayName) !== null && _a !== void 0 ? _a : profile.global_name) !== null && _b !== void 0 ? _b : "";
                     const highestRole = member.roles.highest;
-                    if (roles.includes(process.env.OWNER_ROLE_ID || '') || roles.includes(process.env.MANAGER_ROLE_ID || '') || roles.includes(process.env.ADMIN_ROLE_ID || '') || roles.includes(process.env.SUPPORT_ROLE_ID || '')) {
+                    if (roles.includes(process.env.SUPPORT_ROLE_ID || ''))
+                        newStaff.discordRole = "Support";
+                    if (roles.includes(process.env.ADMIN_ROLE_ID || ''))
+                        newStaff.discordRole = "Admin";
+                    if (roles.includes(process.env.MANAGER_ROLE_ID || ''))
+                        newStaff.discordRole = "Manager";
+                    if (roles.includes(process.env.OWNER_ROLE_ID || ''))
+                        newStaff.discordRole = "Owner";
+                    if (!newStaff.discordRole)
                         newStaff.discordRole = highestRole.name;
-                    }
-                    else {
-                        newStaff.discordRole = "Support Staff";
-                    }
                     newStaff.discordAvatar = profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : "";
                     newStaff.totalTickets = 0;
                     newStaff.totalOpenTickets = 0;
