@@ -32,4 +32,7 @@ export class Message {
 
     @ManyToOne(() => Ticket, (ticket) => ticket.messages, { nullable: true })
     ticket!: Ticket | null;
+
+    @Column()
+    staffRole!: string;
 }

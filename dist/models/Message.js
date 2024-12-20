@@ -55,6 +55,10 @@ __decorate([
     (0, typeorm_1.ManyToOne)(() => Ticket_1.Ticket, (ticket) => ticket.messages, { nullable: true }),
     __metadata("design:type", Object)
 ], Message.prototype, "ticket", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Message.prototype, "staffRole", void 0);
 exports.Message = Message = __decorate([
     (0, typeorm_1.Entity)()
 ], Message);
