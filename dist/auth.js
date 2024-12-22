@@ -113,15 +113,18 @@ app.get('/register', (req, res, next) => {
     passport_1.default.authenticate('discord')(req, res, next);
 });
 app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { failureRedirect: '/register' }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!req.user)
-        return res.redirect('/register');
-    const discordId = req.user.id;
-    if (!discordId) {
-        console.error('Discord ID not found in user profile');
-        return res.redirect('/register');
+    if (res.headersSent) {
+        return;
     }
-    req.session.discordId = discordId;
     try {
+        if (!req.user) {
+            return res.redirect('/register');
+        }
+        const discordId = req.user.id;
+        if (!discordId) {
+            return res.redirect('/register');
+        }
+        req.session.discordId = discordId;
         const response = yield fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
             method: 'POST',
             headers: {
@@ -129,15 +132,16 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { f
             },
             body: JSON.stringify({ discordId }),
         });
-        if (!response.ok)
-            throw new Error('Failed to fetch staff data');
+        if (!response.ok) {
+            return res.redirect('/register');
+        }
         const staffData = yield response.json();
         res.cookie('staffId', staffData.id);
         res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
     }
     catch (error) {
-        console.error('Error fetching staff ID:', error);
-        res.redirect('/register');
+        console.error('Error in auth callback:', error);
+        return res.redirect('/register');
     }
 }));
 exports.default = app;

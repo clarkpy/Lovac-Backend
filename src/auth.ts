@@ -116,37 +116,45 @@ app.get('/register', (req, res, next) => {
 });
 
 app.get('/auth/discord/callback', 
-    passport.authenticate('discord', { failureRedirect: '/register' }),
-    async (req, res) => {
-        if (!req.user) return res.redirect('/register');
-
-        const discordId = (req.user as Profile).id;
-        if (!discordId) {
-            console.error('Discord ID not found in user profile');
-            return res.redirect('/register');
-        }
-
-        req.session.discordId = discordId;
-        
-        try {
-            const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ discordId }),
-            });
-
-            if (!response.ok) throw new Error('Failed to fetch staff data');
-
-            const staffData = await response.json();
-            res.cookie('staffId', staffData.id);
-            res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
-        } catch (error) {
-            console.error('Error fetching staff ID:', error);
-            res.redirect('/register');
-        }
+  passport.authenticate('discord', { failureRedirect: '/register' }),
+  async (req, res) => {
+    if (res.headersSent) {
+      return;
     }
+    try {
+      if (!req.user) {
+        return res.redirect('/register');
+      }
+
+      const discordId = (req.user as Profile).id;
+      if (!discordId) {
+        return res.redirect('/register'); 
+      }
+
+      req.session.discordId = discordId;
+      
+      const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ discordId }),
+      });
+
+      if (!response.ok) {
+        return res.redirect('/register');
+      }
+
+      const staffData = await response.json();
+      
+      res.cookie('staffId', staffData.id);
+      res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
+
+    } catch (error) {
+      console.error('Error in auth callback:', error);
+      return res.redirect('/register');
+    }
+  }
 );
 
 export default app;
