@@ -118,9 +118,8 @@ app.get('/register', (req, res, next) => {
 app.get('/auth/discord/callback', 
   passport.authenticate('discord', { failureRedirect: '/register' }),
   async (req, res) => {
-    if (res.headersSent) {
-      return;
-    }
+    if (res.headersSent) return;
+
     try {
       if (!req.user) {
         return res.redirect('/register');
@@ -128,12 +127,12 @@ app.get('/auth/discord/callback',
 
       const discordId = (req.user as Profile).id;
       if (!discordId) {
-        return res.redirect('/register'); 
+        return res.redirect('/register');
       }
 
+      req.session.discordId = discordId;
+      
       try {
-        req.session.discordId = discordId;
-        
         const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
           method: 'POST',
           headers: {
@@ -148,15 +147,16 @@ app.get('/auth/discord/callback',
     
         const staffData = await response.json();
         
-        res.cookie('staffId', staffData.id)
-           .redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
-    
+        return res
+          .cookie('staffId', staffData.id)
+          .redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
+
       } catch (error) {
-        console.error('Error in auth callback:', error);
+        console.error('Error checking staff:', error);
         return res.redirect('/register');
       }
     } catch (error) {
-      console.error('Error in auth callback:', error);
+      console.error('Error in auth flow:', error);
       return res.redirect('/register');
     }
   }
