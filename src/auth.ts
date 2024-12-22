@@ -1,11 +1,13 @@
 import express from "express";
 import session from "express-session";
 import passport from "passport";
-import { Strategy as DiscordStrategy } from "passport-discord";
+import { Strategy as DiscordStrategy, Profile } from "passport-discord";
 import { AppDataSource } from "./data-source";
 import { Staff } from "./models/Staff";
 import { User, Client, GatewayIntentBits } from 'discord.js';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import { Request } from 'express';
 
 dotenv.config();
 
@@ -31,6 +33,14 @@ const clientReady = new Promise<void>((resolve) => {
     });
 });
 
+interface AuthInfo {
+    discordId: string;
+}
+
+interface AuthenticatedRequest extends Request {
+    authInfo?: AuthInfo;
+}
+
 passport.serializeUser((user, done) => {
     console.log("Serializing user:", user);
     done(null, user);
@@ -47,7 +57,8 @@ passport.use(new DiscordStrategy({
     callbackURL: DISCORD_REDIRECT_URI as string,
     scope: ['identify', 'guilds'],
 }, async (accessToken, refreshToken, profile, done) => {
-    console.log("Received Discord profile:", profile);
+    const discordId = profile.id;
+    done(null, profile, { discordId });
     const guildId = process.env.DISCORD_GUILD_ID || '';
     await clientReady;
 
@@ -57,7 +68,10 @@ passport.use(new DiscordStrategy({
 
         if (member) {
             const roles = member.roles.cache.map(role => role.id);
-            const isStaff = roles.includes(process.env.OWNER_ROLE_ID || '') || roles.includes(process.env.MANAGER_ROLE_ID || '') || roles.includes(process.env.ADMIN_ROLE_ID || '') || roles.includes(process.env.SUPPORT_ROLE_ID || '');
+            const isStaff = roles.includes(process.env.OWNER_ROLE_ID || '') || 
+                           roles.includes(process.env.MANAGER_ROLE_ID || '') || 
+                           roles.includes(process.env.ADMIN_ROLE_ID || '') || 
+                           roles.includes(process.env.SUPPORT_ROLE_ID || '');
 
             if (isStaff) {
                 const staffMember = await AppDataSource.manager.findOne(Staff, { where: { discordId: profile.id } });
@@ -87,6 +101,7 @@ passport.use(new DiscordStrategy({
     }
 }));
 
+app.use(cookieParser());
 app.use(session({
     secret: process.env.SESSION_SECRET || 'asupersecretsecretsessionsecret',
     resave: false,
@@ -102,8 +117,35 @@ app.get('/register', (req, res, next) => {
 
 app.get('/auth/discord/callback', 
     passport.authenticate('discord', { failureRedirect: '/register' }),
-    (req, res) => {
-        res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg'); 
+    async (req, res) => {
+        if (!req.user) return res.redirect('/register');
+
+        const discordId = (req.user as Profile).id;
+        if (!discordId) {
+            console.error('Discord ID not found in user profile');
+            return res.redirect('/register');
+        }
+
+        req.session.discordId = discordId;
+        
+        try {
+            const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ discordId }),
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch staff data');
+
+            const staffData = await response.json();
+            res.cookie('staffId', staffData.id);
+            res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
+        } catch (error) {
+            console.error('Error fetching staff ID:', error);
+            res.redirect('/register');
+        }
     }
 );
 

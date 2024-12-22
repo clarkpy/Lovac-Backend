@@ -20,6 +20,7 @@ const data_source_1 = require("./data-source");
 const Staff_1 = require("./models/Staff");
 const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
@@ -54,7 +55,8 @@ passport_1.default.use(new passport_discord_1.Strategy({
     scope: ['identify', 'guilds'],
 }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
-    console.log("Received Discord profile:", profile);
+    const discordId = profile.id;
+    done(null, profile, { discordId });
     const guildId = process.env.DISCORD_GUILD_ID || '';
     yield clientReady;
     try {
@@ -62,7 +64,10 @@ passport_1.default.use(new passport_discord_1.Strategy({
         const member = yield guild.members.fetch(profile.id);
         if (member) {
             const roles = member.roles.cache.map(role => role.id);
-            const isStaff = roles.includes(process.env.OWNER_ROLE_ID || '') || roles.includes(process.env.MANAGER_ROLE_ID || '') || roles.includes(process.env.ADMIN_ROLE_ID || '') || roles.includes(process.env.SUPPORT_ROLE_ID || '');
+            const isStaff = roles.includes(process.env.OWNER_ROLE_ID || '') ||
+                roles.includes(process.env.MANAGER_ROLE_ID || '') ||
+                roles.includes(process.env.ADMIN_ROLE_ID || '') ||
+                roles.includes(process.env.SUPPORT_ROLE_ID || '');
             if (isStaff) {
                 const staffMember = yield data_source_1.AppDataSource.manager.findOne(Staff_1.Staff, { where: { discordId: profile.id } });
                 if (!staffMember) {
@@ -96,6 +101,7 @@ passport_1.default.use(new passport_discord_1.Strategy({
         return done(error);
     }
 })));
+app.use((0, cookie_parser_1.default)());
 app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET || 'asupersecretsecretsessionsecret',
     resave: false,
@@ -106,7 +112,32 @@ app.use(passport_1.default.session());
 app.get('/register', (req, res, next) => {
     passport_1.default.authenticate('discord')(req, res, next);
 });
-app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { failureRedirect: '/register' }), (req, res) => {
-    res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
-});
+app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { failureRedirect: '/register' }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.user)
+        return res.redirect('/register');
+    const discordId = req.user.id;
+    if (!discordId) {
+        console.error('Discord ID not found in user profile');
+        return res.redirect('/register');
+    }
+    req.session.discordId = discordId;
+    try {
+        const response = yield fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ discordId }),
+        });
+        if (!response.ok)
+            throw new Error('Failed to fetch staff data');
+        const staffData = yield response.json();
+        res.cookie('staffId', staffData.id);
+        res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
+    }
+    catch (error) {
+        console.error('Error fetching staff ID:', error);
+        res.redirect('/register');
+    }
+}));
 exports.default = app;
