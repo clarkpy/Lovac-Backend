@@ -131,25 +131,30 @@ app.get('/auth/discord/callback',
         return res.redirect('/register'); 
       }
 
-      req.session.discordId = discordId;
-      
-      const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ discordId }),
-      });
-
-      if (!response.ok) {
+      try {
+        req.session.discordId = discordId;
+        
+        const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ discordId }),
+        });
+    
+        if (!response.ok) {
+          return res.redirect('/register');
+        }
+    
+        const staffData = await response.json();
+        
+        res.cookie('staffId', staffData.id)
+           .redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
+    
+      } catch (error) {
+        console.error('Error in auth callback:', error);
         return res.redirect('/register');
       }
-
-      const staffData = await response.json();
-      
-      res.cookie('staffId', staffData.id);
-      res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
-
     } catch (error) {
       console.error('Error in auth callback:', error);
       return res.redirect('/register');
