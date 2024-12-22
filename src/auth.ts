@@ -147,12 +147,25 @@ app.get('/auth/discord/callback',
         failureMessage: true,
         session: true
     }),
-    (req: AuthenticatedRequest, res: Response) => {
-        if (!req.user) {
-            res.redirect('/register');
-            return;
+    async (req: AuthenticatedRequest, res: Response) => {
+        try {
+            if (!req.user) {
+                return res.redirect('/register');
+            }
+
+            const discordId = (req.user as Profile).id;
+            if (!discordId) {
+                return res.redirect('/register');
+            }
+
+            req.session.discordId = discordId;
+            
+            return res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
+
+        } catch (error) {
+            console.error('Auth callback error:', error);
+            return res.redirect('/register');
         }
-        res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
     }
 );
 
