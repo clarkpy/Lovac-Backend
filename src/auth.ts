@@ -7,7 +7,7 @@ import { Staff } from "./models/Staff";
 import { User, Client, GatewayIntentBits } from 'discord.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 dotenv.config();
 
@@ -101,65 +101,47 @@ passport.use(new DiscordStrategy({
     }
 }));
 
-app.use(cookieParser());
+passport.serializeUser((user, done) => {
+  done(null, user as User | null);
+});
+
+passport.deserializeUser((user, done) => {
+  done(null, user as User | null);
+});
+
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'asupersecretsecretsessionsecret',
-    resave: false,
-    saveUninitialized: false,
+  secret: process.env.SESSION_SECRET || 'asupersecretsecretsessionsecret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60000 * 60 * 24
+  }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/register', (req, res, next) => {
-    passport.authenticate('discord')(req, res, next);
-});
+app.get('/register', passport.authenticate('discord', {
+  scope: ['identify', 'guilds']
+}));
 
-app.get('/auth/discord/callback', 
-  passport.authenticate('discord', { failureRedirect: '/register' }),
-  async (req, res) => {
-    if (res.headersSent) return;
-
-    try {
-      if (!req.user) {
-        return res.redirect('/register');
-      }
-
-      const discordId = (req.user as Profile).id;
-      if (!discordId) {
-        return res.redirect('/register');
-      }
-
-      req.session.discordId = discordId;
-      
-      try {
-        const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ discordId }),
-        });
-    
-        if (!response.ok) {
-          return res.redirect('/register');
-        }
-    
-        const staffData = await response.json();
-        
-        return res
-          .cookie('staffId', staffData.id)
-          .redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
-
-      } catch (error) {
-        console.error('Error checking staff:', error);
-        return res.redirect('/register');
-      }
-    } catch (error) {
-      console.error('Error in auth flow:', error);
+app.get('/auth/discord/callback',
+  passport.authenticate('discord', {
+    failureRedirect: '/register',
+    failureMessage: true
+  }),
+  (req, res) => {
+    if (!req.user) {
       return res.redirect('/register');
     }
+    res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
   }
 );
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error('Auth Error:', err);
+  res.redirect('/register');
+});
 
 export default app;
