@@ -148,6 +148,11 @@ app.get('/auth/discord/callback',
         session: true
     }),
     async (req: AuthenticatedRequest, res: Response) => {
+        if (res.headersSent) {
+            console.log('Headers already sent, skipping further processing');
+            return;
+        }
+
         try {
             if (!req.user) {
                 return res.redirect('/register');
@@ -157,14 +162,17 @@ app.get('/auth/discord/callback',
             if (!discordId) {
                 return res.redirect('/register');
             }
-
-            req.session.discordId = discordId;
             
+            req.session.discordId = discordId;
+            await req.session.save();
+
             return res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
 
         } catch (error) {
             console.error('Auth callback error:', error);
-            return res.redirect('/register');
+            if (!res.headersSent) {
+                return res.redirect('/register');
+            }
         }
     }
 );
