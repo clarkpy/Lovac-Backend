@@ -20,6 +20,7 @@ const data_source_1 = require("./data-source");
 const Staff_1 = require("./models/Staff");
 const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
+const node_fetch_1 = __importDefault(require("node-fetch"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
@@ -139,6 +140,25 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', {
         }
         req.session.discordId = discordId;
         yield req.session.save();
+        const response = yield (0, node_fetch_1.default)(`<backendip>/staff/checkstaff`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ discordId })
+        });
+        if (!response.ok) {
+            console.error('Failed to fetch staff ID');
+            return;
+        }
+        const data = yield response.json();
+        const staffId = data.staffId;
+        res.cookie('staffId', staffId, {
+            path: '/',
+            domain: 'tickets.minecrush.gg',
+            secure: true,
+            sameSite: 'lax',
+        });
         return res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
     }
     catch (error) {

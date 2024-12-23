@@ -8,6 +8,7 @@ import { User, Client, GatewayIntentBits } from 'discord.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { Request, Response, NextFunction } from 'express';
+import fetch from 'node-fetch';
 
 dotenv.config();
 
@@ -165,6 +166,29 @@ app.get('/auth/discord/callback',
             
             req.session.discordId = discordId;
             await req.session.save();
+
+            const response = await fetch(`<backendip>/staff/checkstaff`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ discordId })
+            });
+
+            if (!response.ok) {
+                console.error('Failed to fetch staff ID');
+                return;
+            }
+
+            const data = await response.json();
+            const staffId = data.staffId;
+
+            res.cookie('staffId', staffId, {
+                path: '/',
+                domain: 'tickets.minecrush.gg',
+                secure: true,
+                sameSite: 'lax',
+            });
 
             return res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
 
