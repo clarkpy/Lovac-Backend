@@ -167,12 +167,47 @@ app.get('/auth/discord/callback',
             req.session.discordId = discordId;
             await req.session.save();
 
-            const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/checkstaff`, {
+            const staffMember = await AppDataSource.manager.findOne(Staff, { 
+                where: { discordId: discordId } 
+            });
+
+            if (!staffMember) {
+                const newStaff = new Staff();
+                newStaff.discordId = discordId;
+                newStaff.discordUsername = (req.user as Profile).username;
+                newStaff.discordDisplayName = (req.user as Profile).displayName ?? (req.user as Profile).global_name ?? "";
+                
+                const guildId = process.env.DISCORD_GUILD_ID || '';
+                const guild = await client.guilds.fetch(guildId);
+                const member = await guild.members.fetch(discordId);
+                const roles = member.roles.cache.map(role => role.id);
+                
+                if (roles.includes(process.env.OWNER_ROLE_ID || '')) {
+                    newStaff.discordRole = "Owner";
+                } else if (roles.includes(process.env.MANAGER_ROLE_ID || '')) {
+                    newStaff.discordRole = "Manager";
+                } else if (roles.includes(process.env.ADMIN_ROLE_ID || '')) {
+                    newStaff.discordRole = "Admin";
+                } else if (roles.includes(process.env.SUPPORT_ROLE_ID || '')) {
+                    newStaff.discordRole = "Support";
+                } else {
+                    newStaff.discordRole = member.roles.highest.name;
+                }
+
+                newStaff.discordAvatar = (req.user as Profile).avatar ? 
+                    `https://cdn.discordapp.com/avatars/${discordId}/${(req.user as Profile).avatar}.png` : "";
+                newStaff.totalTickets = 0;
+                newStaff.totalOpenTickets = 0;
+                
+                await AppDataSource.manager.save(newStaff);
+            }
+
+            const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ discordId })
+                body: JSON.stringify({ discordId: discordId })
             });
 
             console.log('Discord ID:', discordId);
