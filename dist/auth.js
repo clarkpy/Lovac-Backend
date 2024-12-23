@@ -22,11 +22,25 @@ const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
+const cors_1 = __importDefault(require("cors"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+const isDevelopment = process.env.NODE_ENV !== 'production';
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI;
+const FRONTEND_URL = process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg';
+function extractDomain(url) {
+    try {
+        const domain = new URL(url).hostname;
+        return isDevelopment ? 'localhost' : domain;
+    }
+    catch (error) {
+        console.error('Error parsing URL:', error);
+        return 'localhost';
+    }
+}
+const COOKIE_DOMAIN = extractDomain(FRONTEND_URL);
 const client = new discord_js_1.Client({
     intents: [
         discord_js_1.GatewayIntentBits.Guilds,
@@ -41,6 +55,23 @@ const clientReady = new Promise((resolve) => {
         resolve();
     });
 });
+app.use((0, cors_1.default)({
+    origin: FRONTEND_URL,
+    credentials: true
+}));
+app.use((0, express_session_1.default)({
+    secret: process.env.SESSION_SECRET || 'asupersecretsecretsessionsecret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: !isDevelopment,
+        maxAge: 60000 * 60 * 24,
+        sameSite: isDevelopment ? 'lax' : 'strict',
+        domain: COOKIE_DOMAIN,
+        path: '/'
+    }
+}));
+app.use((0, cookie_parser_1.default)());
 passport_1.default.serializeUser((user, done) => {
     done(null, user);
 });
@@ -106,16 +137,6 @@ passport_1.default.use(new passport_discord_1.Strategy({
         return done(error);
     }
 })));
-app.use((0, express_session_1.default)({
-    secret: process.env.SESSION_SECRET || 'asupersecretsecretsessionsecret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60000 * 60 * 24
-    }
-}));
-app.use((0, cookie_parser_1.default)());
 app.use(passport_1.default.initialize());
 app.use(passport_1.default.session());
 app.get('/register', passport_1.default.authenticate('discord', {
@@ -181,24 +202,39 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', {
             },
             body: JSON.stringify({ discordId: discordId })
         });
-        console.log('Discord ID:', discordId);
         if (!response.ok) {
-            console.log('Response Status:', response.status);
-            const errorBody = yield response.text();
-            console.log('Response Body:', errorBody);
             console.error('Failed to fetch staff ID');
+            const errorBody = yield response.text();
+            console.log('Response Status:', response.status);
+            console.log('Response Body:', errorBody);
             return;
         }
         const data = (yield response.json());
         const staffId = data.id;
-        console.log('Staff ID:', staffId);
         res.cookie('staffId', staffId, {
-            maxAge: 900000,
-            httpOnly: true,
-            secure: true,
-            sameSite: 'lax',
+            maxAge: 90000000,
+            httpOnly: false,
+            secure: !isDevelopment,
+            sameSite: isDevelopment ? 'lax' : 'strict',
+            domain: COOKIE_DOMAIN,
+            path: '/'
         });
-        return res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
+        res.cookie('isAuthenticated', 'true', {
+            maxAge: 900000,
+            httpOnly: false,
+            secure: !isDevelopment,
+            sameSite: isDevelopment ? 'lax' : 'strict',
+            domain: COOKIE_DOMAIN,
+            path: '/'
+        });
+        if (isDevelopment) {
+            console.log('Cookie settings:', {
+                domain: COOKIE_DOMAIN,
+                secure: !isDevelopment,
+                sameSite: isDevelopment ? 'lax' : 'strict'
+            });
+        }
+        return res.redirect(FRONTEND_URL);
     }
     catch (error) {
         console.error('Auth callback error:', error);
