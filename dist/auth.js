@@ -140,7 +140,7 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', {
         }
         req.session.discordId = discordId;
         yield req.session.save();
-        const response = yield (0, node_fetch_1.default)(`<backendip>/staff/checkstaff`, {
+        const response = yield (0, node_fetch_1.default)(`${process.env.LOVAC_BACKEND_URL}/staff/checkstaff`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -151,7 +151,7 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', {
             console.error('Failed to fetch staff ID');
             return;
         }
-        const data = yield response.json();
+        const data = (yield response.json());
         const staffId = data.staffId;
         res.cookie('staffId', staffId, {
             path: '/',

@@ -167,7 +167,7 @@ app.get('/auth/discord/callback',
             req.session.discordId = discordId;
             await req.session.save();
 
-            const response = await fetch(`<backendip>/staff/checkstaff`, {
+            const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/checkstaff`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -180,7 +180,11 @@ app.get('/auth/discord/callback',
                 return;
             }
 
-            const data = await response.json();
+            interface StaffResponse {
+                staffId: string;
+            }
+
+            const data = (await response.json()) as StaffResponse;
             const staffId = data.staffId;
 
             res.cookie('staffId', staffId, {
