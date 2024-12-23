@@ -153,7 +153,7 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', {
             return;
         }
         const data = (yield response.json());
-        const staffId = data.staffId;
+        const staffId = data.id;
         res.cookie('staffId', staffId, {
             path: '/',
             domain: 'tickets.minecrush.gg',

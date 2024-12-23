@@ -182,11 +182,11 @@ app.get('/auth/discord/callback',
             }
 
             interface StaffResponse {
-                staffId: string;
+                id: string;
             }
 
             const data = (await response.json()) as StaffResponse;
-            const staffId = data.staffId;
+            const staffId = data.id;
 
             res.cookie('staffId', staffId, {
                 path: '/',
