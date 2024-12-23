@@ -20,6 +20,7 @@ const data_source_1 = require("./data-source");
 const Staff_1 = require("./models/Staff");
 const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -114,6 +115,7 @@ app.use((0, express_session_1.default)({
         maxAge: 60000 * 60 * 24
     }
 }));
+app.use((0, cookie_parser_1.default)());
 app.use(passport_1.default.initialize());
 app.use(passport_1.default.session());
 app.get('/register', passport_1.default.authenticate('discord', {
