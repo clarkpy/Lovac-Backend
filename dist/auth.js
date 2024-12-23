@@ -191,8 +191,8 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', {
         const staffId = data.id;
         console.log('Staff ID:', staffId);
         res.cookie('staffId', staffId, {
-            path: '/',
-            domain: 'tickets.minecrush.gg',
+            maxAge: 900000,
+            httpOnly: true,
             secure: true,
             sameSite: 'lax',
         });

@@ -228,8 +228,8 @@ app.get('/auth/discord/callback',
             console.log('Staff ID:', staffId);
 
             res.cookie('staffId', staffId, {
-                path: '/',
-                domain: 'tickets.minecrush.gg',
+                maxAge: 900000,
+                httpOnly: true,
                 secure: true,
                 sameSite: 'lax',
             });
