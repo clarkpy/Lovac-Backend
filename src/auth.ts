@@ -227,8 +227,6 @@ app.get('/auth/discord/callback',
             const data = (await response.json()) as StaffResponse;
             const staffId = data.id;
 
-            req.session.id = staffId;
-
             console.log('Staff ID:', staffId);
 
             res.cookie('staffId', staffId, {
