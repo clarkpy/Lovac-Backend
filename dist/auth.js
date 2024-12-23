@@ -148,6 +148,7 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', {
             body: JSON.stringify({ discordId })
         });
         if (!response.ok) {
+            console.log(discordId);
             console.error('Failed to fetch staff ID');
             return;
         }

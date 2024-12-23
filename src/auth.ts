@@ -176,6 +176,7 @@ app.get('/auth/discord/callback',
             });
 
             if (!response.ok) {
+                console.log(discordId);
                 console.error('Failed to fetch staff ID');
                 return;
             }
