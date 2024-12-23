@@ -21,26 +21,11 @@ const Staff_1 = require("./models/Staff");
 const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const node_fetch_1 = __importDefault(require("node-fetch"));
-const cors_1 = __importDefault(require("cors"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-const isDevelopment = process.env.NODE_ENV !== 'production';
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI;
-const FRONTEND_URL = process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg';
-function extractDomain(url) {
-    try {
-        const domain = new URL(url).hostname;
-        return isDevelopment ? 'localhost' : domain;
-    }
-    catch (error) {
-        console.error('Error parsing URL:', error);
-        return 'localhost';
-    }
-}
-const COOKIE_DOMAIN = extractDomain(FRONTEND_URL);
 const client = new discord_js_1.Client({
     intents: [
         discord_js_1.GatewayIntentBits.Guilds,
@@ -55,27 +40,12 @@ const clientReady = new Promise((resolve) => {
         resolve();
     });
 });
-app.use((0, cors_1.default)({
-    origin: FRONTEND_URL,
-    credentials: true
-}));
-app.use((0, express_session_1.default)({
-    secret: process.env.SESSION_SECRET || 'asupersecretsecretsessionsecret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: !isDevelopment,
-        maxAge: 60000 * 60 * 24,
-        sameSite: isDevelopment ? 'lax' : 'strict',
-        domain: COOKIE_DOMAIN,
-        path: '/'
-    }
-}));
-app.use((0, cookie_parser_1.default)());
 passport_1.default.serializeUser((user, done) => {
+    console.log("Serializing user:", user);
     done(null, user);
 });
 passport_1.default.deserializeUser((obj, done) => {
+    console.log("Deserializing user:", obj);
     done(null, obj);
 });
 passport_1.default.use(new passport_discord_1.Strategy({
@@ -85,166 +55,89 @@ passport_1.default.use(new passport_discord_1.Strategy({
     scope: ['identify', 'guilds'],
 }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
+    const discordId = profile.id;
+    done(null, profile, { discordId });
+    const guildId = process.env.DISCORD_GUILD_ID || '';
+    yield clientReady;
     try {
-        yield clientReady;
-        const guildId = process.env.DISCORD_GUILD_ID || '';
         const guild = yield client.guilds.fetch(guildId);
         const member = yield guild.members.fetch(profile.id);
-        if (!member) {
-            return done(null, false, { message: 'User not found in guild.' });
+        if (member) {
+            const roles = member.roles.cache.map(role => role.id);
+            const isStaff = roles.includes(process.env.OWNER_ROLE_ID || '') ||
+                roles.includes(process.env.MANAGER_ROLE_ID || '') ||
+                roles.includes(process.env.ADMIN_ROLE_ID || '') ||
+                roles.includes(process.env.SUPPORT_ROLE_ID || '');
+            if (isStaff) {
+                const staffMember = yield data_source_1.AppDataSource.manager.findOne(Staff_1.Staff, { where: { discordId: profile.id } });
+                if (!staffMember) {
+                    const newStaff = new Staff_1.Staff();
+                    newStaff.discordId = profile.id;
+                    newStaff.discordUsername = profile.username;
+                    newStaff.discordDisplayName = (_b = (_a = profile.displayName) !== null && _a !== void 0 ? _a : profile.global_name) !== null && _b !== void 0 ? _b : "";
+                    const highestRole = member.roles.highest;
+                    if (roles.includes(process.env.SUPPORT_ROLE_ID || ''))
+                        newStaff.discordRole = "Support";
+                    if (roles.includes(process.env.ADMIN_ROLE_ID || ''))
+                        newStaff.discordRole = "Admin";
+                    if (roles.includes(process.env.MANAGER_ROLE_ID || ''))
+                        newStaff.discordRole = "Manager";
+                    if (roles.includes(process.env.OWNER_ROLE_ID || ''))
+                        newStaff.discordRole = "Owner";
+                    if (!newStaff.discordRole)
+                        newStaff.discordRole = highestRole.name;
+                    newStaff.discordAvatar = profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : "";
+                    newStaff.totalTickets = 0;
+                    newStaff.totalOpenTickets = 0;
+                    yield data_source_1.AppDataSource.manager.save(newStaff);
+                }
+                return done(null, profile);
+            }
         }
-        const roles = member.roles.cache.map(role => role.id);
-        const isStaff = roles.includes(process.env.OWNER_ROLE_ID || '') ||
-            roles.includes(process.env.MANAGER_ROLE_ID || '') ||
-            roles.includes(process.env.ADMIN_ROLE_ID || '') ||
-            roles.includes(process.env.SUPPORT_ROLE_ID || '');
-        if (!isStaff) {
-            return done(null, false, { message: 'You do not have permission to register as staff.' });
-        }
-        const staffMember = yield data_source_1.AppDataSource.manager.findOne(Staff_1.Staff, {
-            where: { discordId: profile.id }
-        });
-        if (!staffMember) {
-            const newStaff = new Staff_1.Staff();
-            newStaff.discordId = profile.id;
-            newStaff.discordUsername = profile.username;
-            newStaff.discordDisplayName = (_b = (_a = profile.displayName) !== null && _a !== void 0 ? _a : profile.global_name) !== null && _b !== void 0 ? _b : "";
-            if (roles.includes(process.env.OWNER_ROLE_ID || '')) {
-                newStaff.discordRole = "Owner";
-            }
-            else if (roles.includes(process.env.MANAGER_ROLE_ID || '')) {
-                newStaff.discordRole = "Manager";
-            }
-            else if (roles.includes(process.env.ADMIN_ROLE_ID || '')) {
-                newStaff.discordRole = "Admin";
-            }
-            else if (roles.includes(process.env.SUPPORT_ROLE_ID || '')) {
-                newStaff.discordRole = "Support";
-            }
-            else {
-                newStaff.discordRole = member.roles.highest.name;
-            }
-            newStaff.discordAvatar = profile.avatar ?
-                `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : "";
-            newStaff.totalTickets = 0;
-            newStaff.totalOpenTickets = 0;
-            yield data_source_1.AppDataSource.manager.save(newStaff);
-        }
-        return done(null, profile, { discordId: profile.id });
+        return done(null, false, { message: 'You do not have permission to register as staff.' });
     }
     catch (error) {
-        console.error("Error in Discord authentication:", error);
+        console.error("Error fetching member:", error);
         return done(error);
     }
 })));
+app.use((0, cookie_parser_1.default)());
+app.use((0, express_session_1.default)({
+    secret: process.env.SESSION_SECRET || 'asupersecretsecretsessionsecret',
+    resave: false,
+    saveUninitialized: false,
+}));
 app.use(passport_1.default.initialize());
 app.use(passport_1.default.session());
-app.get('/register', passport_1.default.authenticate('discord', {
-    scope: ['identify', 'guilds']
-}));
-app.get('/auth/discord/callback', passport_1.default.authenticate('discord', {
-    failureRedirect: '/register',
-    failureMessage: true,
-    session: true
-}), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    if (res.headersSent) {
-        console.log('Headers already sent, skipping further processing');
-        return;
+app.get('/register', (req, res, next) => {
+    passport_1.default.authenticate('discord')(req, res, next);
+});
+app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { failureRedirect: '/register' }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.user)
+        return res.redirect('/register');
+    const discordId = req.user.id;
+    if (!discordId) {
+        console.error('Discord ID not found in user profile');
+        return res.redirect('/register');
     }
+    req.session.discordId = discordId;
     try {
-        if (!req.user) {
-            return res.redirect('/register');
-        }
-        const discordId = req.user.id;
-        if (!discordId) {
-            return res.redirect('/register');
-        }
-        req.session.discordId = discordId;
-        yield req.session.save();
-        const staffMember = yield data_source_1.AppDataSource.manager.findOne(Staff_1.Staff, {
-            where: { discordId: discordId }
-        });
-        if (!staffMember) {
-            const newStaff = new Staff_1.Staff();
-            newStaff.discordId = discordId;
-            newStaff.discordUsername = req.user.username;
-            newStaff.discordDisplayName = (_b = (_a = req.user.displayName) !== null && _a !== void 0 ? _a : req.user.global_name) !== null && _b !== void 0 ? _b : "";
-            const guildId = process.env.DISCORD_GUILD_ID || '';
-            const guild = yield client.guilds.fetch(guildId);
-            const member = yield guild.members.fetch(discordId);
-            const roles = member.roles.cache.map(role => role.id);
-            if (roles.includes(process.env.OWNER_ROLE_ID || '')) {
-                newStaff.discordRole = "Owner";
-            }
-            else if (roles.includes(process.env.MANAGER_ROLE_ID || '')) {
-                newStaff.discordRole = "Manager";
-            }
-            else if (roles.includes(process.env.ADMIN_ROLE_ID || '')) {
-                newStaff.discordRole = "Admin";
-            }
-            else if (roles.includes(process.env.SUPPORT_ROLE_ID || '')) {
-                newStaff.discordRole = "Support";
-            }
-            else {
-                newStaff.discordRole = member.roles.highest.name;
-            }
-            newStaff.discordAvatar = req.user.avatar ?
-                `https://cdn.discordapp.com/avatars/${discordId}/${req.user.avatar}.png` : "";
-            newStaff.totalTickets = 0;
-            newStaff.totalOpenTickets = 0;
-            yield data_source_1.AppDataSource.manager.save(newStaff);
-        }
-        const response = yield (0, node_fetch_1.default)(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
+        const response = yield fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ discordId: discordId })
+            body: JSON.stringify({ discordId }),
         });
-        if (!response.ok) {
-            console.error('Failed to fetch staff ID');
-            const errorBody = yield response.text();
-            console.log('Response Status:', response.status);
-            console.log('Response Body:', errorBody);
-            return;
-        }
-        const data = (yield response.json());
-        const staffId = data.id;
-        res.cookie('staffId', staffId, {
-            maxAge: 90000000,
-            httpOnly: false,
-            secure: !isDevelopment,
-            sameSite: isDevelopment ? 'lax' : 'strict',
-            domain: COOKIE_DOMAIN,
-            path: '/'
-        });
-        res.cookie('isAuthenticated', 'true', {
-            maxAge: 900000,
-            httpOnly: false,
-            secure: !isDevelopment,
-            sameSite: isDevelopment ? 'lax' : 'strict',
-            domain: COOKIE_DOMAIN,
-            path: '/'
-        });
-        if (isDevelopment) {
-            console.log('Cookie settings:', {
-                domain: COOKIE_DOMAIN,
-                secure: !isDevelopment,
-                sameSite: isDevelopment ? 'lax' : 'strict'
-            });
-        }
-        return res.redirect(FRONTEND_URL);
+        if (!response.ok)
+            throw new Error('Failed to fetch staff data');
+        const staffData = yield response.json();
+        res.cookie('staffId', staffData.id);
+        res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
     }
     catch (error) {
-        console.error('Auth callback error:', error);
-        if (!res.headersSent) {
-            return res.redirect('/register');
-        }
+        console.error('Error fetching staff ID:', error);
+        res.redirect('/register');
     }
 }));
-app.use((err, req, res, next) => {
-    console.error('Auth Error:', err);
-    res.redirect('/register');
-});
 exports.default = app;
