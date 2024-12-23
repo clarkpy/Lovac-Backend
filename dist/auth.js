@@ -41,11 +41,9 @@ const clientReady = new Promise((resolve) => {
     });
 });
 passport_1.default.serializeUser((user, done) => {
-    console.log("Serializing user:", user);
     done(null, user);
 });
 passport_1.default.deserializeUser((obj, done) => {
-    console.log("Deserializing user:", obj);
     done(null, obj);
 });
 passport_1.default.use(new passport_discord_1.Strategy({

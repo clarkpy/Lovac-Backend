@@ -51,12 +51,10 @@ interface AuthenticatedRequest extends Request {
 }
 
 passport.serializeUser((user, done) => {
-    console.log("Serializing user:", user);
     done(null, user);
 });
 
 passport.deserializeUser((obj: any, done) => {
-    console.log("Deserializing user:", obj);
     done(null, obj);
 });
 
