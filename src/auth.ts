@@ -175,8 +175,12 @@ app.get('/auth/discord/callback',
                 body: JSON.stringify({ discordId })
             });
 
+            console.log('Discord ID:', discordId);
+
             if (!response.ok) {
-                console.log(discordId);
+                console.log('Response Status:', response.status);
+                const errorBody = await response.text();
+                console.log('Response Body:', errorBody);
                 console.error('Failed to fetch staff ID');
                 return;
             }
