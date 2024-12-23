@@ -107,6 +107,7 @@ passport.use(new DiscordStrategy({
         const member = await guild.members.fetch(profile.id);
 
         if (!member) {
+            console.error(`User not found in guild: ${profile.id} - ${profile.username}`);
             return done(null, false, { message: 'User not found in guild.' });
         }
 
@@ -117,6 +118,7 @@ passport.use(new DiscordStrategy({
                        roles.includes(process.env.SUPPORT_ROLE_ID || '');
 
         if (!isStaff) {
+            console.error(`User does not have permission: ${profile.id} - ${profile.username}`);
             return done(null, false, { message: 'You do not have permission to register as staff.' });
         }
 
@@ -148,12 +150,14 @@ passport.use(new DiscordStrategy({
             newStaff.totalOpenTickets = 0;
             
             await AppDataSource.manager.save(newStaff);
+            console.log(`New staff member created: ${newStaff.discordId} - ${newStaff.discordUsername}`);
         }
 
+        console.log(`User authenticated successfully: ${profile.id} - ${profile.username}`);
         return done(null, profile, { discordId: profile.id });
 
     } catch (error) {
-        console.error("Error in Discord authentication:", error);
+        console.error(`Authentication error: ${error.message} - ${error.stack}`);
         return done(error);
     }
 }));
@@ -189,6 +193,7 @@ app.get('/auth/discord/callback',
             
             req.session.discordId = discordId;
             await req.session.save();
+            console.log(`User authenticated and session saved: ${discordId}`);
 
             const staffMember = await AppDataSource.manager.findOne(Staff, { 
                 where: { discordId: discordId } 
@@ -277,7 +282,7 @@ app.get('/auth/discord/callback',
             return res.redirect(FRONTEND_URL);
 
         } catch (error) {
-            console.error('Auth callback error:', error);
+            console.error(`Auth callback error: ${error.message} - ${error.stack}`);
             if (!res.headersSent) {
                 return res.redirect('/register');
             }
@@ -286,7 +291,7 @@ app.get('/auth/discord/callback',
 );
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error('Auth Error:', err);
+    console.error(`Auth Error: ${err.message} - ${err.stack}`);
     res.redirect('/register');
 });
 
