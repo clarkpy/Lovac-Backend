@@ -58,7 +58,6 @@ passport.use(new DiscordStrategy({
     scope: ['identify', 'guilds'],
 }, async (accessToken, refreshToken, profile, done) => {
     const discordId = profile.id;
-    done(null, profile, { discordId });
     const guildId = process.env.DISCORD_GUILD_ID || '';
     await clientReady;
 

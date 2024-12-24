@@ -56,7 +56,6 @@ passport_1.default.use(new passport_discord_1.Strategy({
 }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const discordId = profile.id;
-    done(null, profile, { discordId });
     const guildId = process.env.DISCORD_GUILD_ID || '';
     yield clientReady;
     try {
