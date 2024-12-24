@@ -128,6 +128,9 @@ app.get('/auth/discord/callback',
 
         req.session.discordId = discordId;
         
+        console.log('Discord ID:', discordId);
+        console.log('Staff check URL:', `${process.env.LOVAC_BACKEND_URL}/staff/check-staff`);
+
         try {
             const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
                 method: 'POST',

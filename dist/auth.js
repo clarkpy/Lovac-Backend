@@ -121,6 +121,8 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { f
         return res.redirect('/register');
     }
     req.session.discordId = discordId;
+    console.log('Discord ID:', discordId);
+    console.log('Staff check URL:', `${process.env.LOVAC_BACKEND_URL}/staff/check-staff`);
     try {
         const response = yield fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
             method: 'POST',
