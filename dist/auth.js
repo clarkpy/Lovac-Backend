@@ -129,7 +129,7 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { f
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ discordId }),
+            body: JSON.stringify({ discordId: discordId.toString() }),
         });
         if (!response.ok)
             throw new Error(`Failed to fetch staff data ${response.status}`);
