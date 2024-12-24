@@ -132,7 +132,7 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { f
             body: JSON.stringify({ discordId }),
         });
         if (!response.ok)
-            throw new Error('Failed to fetch staff data');
+            throw new Error(`Failed to fetch staff data ${response.status}`);
         const staffData = yield response.json();
         res.cookie('staffId', staffData.id);
         res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');

@@ -140,7 +140,7 @@ app.get('/auth/discord/callback',
                 body: JSON.stringify({ discordId }),
             });
 
-            if (!response.ok) throw new Error('Failed to fetch staff data');
+            if (!response.ok) throw new Error(`Failed to fetch staff data ${response.status}`);
 
             const staffData = await response.json();
             res.cookie('staffId', staffData.id);
