@@ -147,7 +147,7 @@ app.get('/auth/discord/callback',
             res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
         } catch (error) {
             console.error('Error fetching staff ID:', error);
-            res.redirect('/register');
+            return res.redirect('/register');
         }
     }
 );

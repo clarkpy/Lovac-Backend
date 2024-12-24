@@ -139,7 +139,7 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { f
     }
     catch (error) {
         console.error('Error fetching staff ID:', error);
-        res.redirect('/register');
+        return res.redirect('/register');
     }
 }));
 exports.default = app;
