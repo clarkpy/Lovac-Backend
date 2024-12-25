@@ -135,8 +135,8 @@ app.get('/auth/discord/callback', passport_1.default.authenticate('discord', { f
         const staffData = yield response.json();
         console.log('Return data:', staffData);
         console.log('Staff ID:', staffData.id);
-        res.cookie('staffId', staffData.id);
         res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
+        res.cookie('staffId', staffData.id);
     }
     catch (error) {
         console.error('Error fetching staff ID:', error);
