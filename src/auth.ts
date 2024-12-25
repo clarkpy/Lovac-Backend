@@ -142,6 +142,7 @@ app.get('/auth/discord/callback',
             if (!response.ok) throw new Error(`Failed to fetch staff data ${response.status}`);
 
             const staffData = await response.json();
+            console.log('Return data:', staffData);
             res.cookie('staffId', staffData.id);
             res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
         } catch (error) {
