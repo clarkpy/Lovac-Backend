@@ -146,7 +146,7 @@ app.get('/auth/discord/callback',
             console.log('Staff ID:', staffData.id);
             
             res.cookie('staffId', staffData.id, {
-                httpOnly: true,
+                httpOnly: false,
                 secure: process.env.NODE_ENV === 'production',
                 domain: process.env.BASE_DOMAIN,
                 sameSite: 'none',
