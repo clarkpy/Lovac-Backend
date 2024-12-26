@@ -145,13 +145,37 @@ app.get('/auth/discord/callback',
             console.log('Return data:', staffData);
             console.log('Staff ID:', staffData.id);
             
+            res.cookie('staffId', staffData.id, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 24 * 60 * 60 * 7000
+            });
+            res.setHeader('X-Staff-Id', staffData.id);
             res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
-            res.cookie('staffId', staffData.id);
         } catch (error) {
             console.error('Error fetching staff ID:', error);
             return res.redirect('/register');
         }
     }
 );
+
+app.get('/api/getStaffId', (req, res) => {
+  const staffId = req.cookies.staffId; // Read the staffId from the cookies
+  if (staffId) {
+    res.send(staffId); // Send the staffId back as the response
+  } else {
+    res.status(404).send('Staff ID not found'); // Handle case where cookie is not found
+  }
+});
+
+app.get('/api/getStaffId', (req, res) => {
+  const staffId = req.cookies.staffId; // Read the staffId from the cookies
+  if (staffId) {
+    res.send(staffId); // Send the staffId back as the response
+  } else {
+    res.status(404).send('Staff ID not found'); // Handle case where cookie is not found
+  }
+});
 
 export default app;
