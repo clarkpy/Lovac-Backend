@@ -35,7 +35,7 @@ app.use(auth);
 log("Authentication routes registered.", "success");
 
 log("Registering API routes...", "log");
-app.use("/tickets", ticketRoutes);
+app.use("/", ticketRoutes);
 app.use("/tags", tagRoutes);
 app.use("/staff", staffRoutes);
 app.use("/categories", categoryRoutes);

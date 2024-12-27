@@ -32,7 +32,7 @@ app.use(express_1.default.json());
 app.use(auth_1.default);
 (0, logger_1.default)("Authentication routes registered.", "success");
 (0, logger_1.default)("Registering API routes...", "log");
-app.use("/tickets", ticketRoutes_1.default);
+app.use("/", ticketRoutes_1.default);
 app.use("/tags", tagRoutes_1.default);
 app.use("/staff", staffRoutes_1.default);
 app.use("/categories", categoryRoutes_1.default);
