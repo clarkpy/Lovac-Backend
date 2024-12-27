@@ -8,9 +8,10 @@ const Tag_1 = require("./models/Tag");
 const Staff_1 = require("./models/Staff");
 const Category_1 = require("./models/Category");
 const Team_1 = require("./models/Team");
+const User_1 = require("./models/User");
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "sqlite",
     database: "./db.sqlite",
     synchronize: true,
-    entities: [Ticket_1.Ticket, Message_1.Message, Tag_1.Tag, Staff_1.Staff, Category_1.Category, Team_1.Team],
+    entities: [Ticket_1.Ticket, Message_1.Message, Tag_1.Tag, Staff_1.Staff, Category_1.Category, Team_1.Team, User_1.User],
 });

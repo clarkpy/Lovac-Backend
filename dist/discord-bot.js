@@ -17,8 +17,10 @@ const discord_js_1 = require("discord.js");
 const Ticket_1 = require("./models/Ticket");
 const data_source_1 = require("./data-source");
 const Team_1 = require("./models/Team");
+const User_1 = require("./models/User"); // Adjust the import path as necessary
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("./logger"));
+const blacklist_1 = require("./commands/blacklist");
 dotenv_1.default.config();
 exports.bot = new discord_js_1.Client({
     intents: [
@@ -39,6 +41,12 @@ const commands = [
         name: 'unassign',
         description: 'Unassign yourself from the current ticket',
     },
+    new discord_js_1.SlashCommandBuilder()
+        .setName('blacklist')
+        .setDescription('Blacklist a user')
+        .addUserOption(option => option.setName('user')
+        .setDescription('The user to blacklist')
+        .setRequired(true)),
 ];
 const rest = new discord_js_1.REST({ version: '9' }).setToken(process.env.DISCORD_BOT_TOKEN || '');
 exports.bot.login(process.env.DISCORD_BOT_TOKEN).then(() => {
@@ -50,6 +58,7 @@ exports.bot.login(process.env.DISCORD_BOT_TOKEN).then(() => {
 });
 const ticketRepository = data_source_1.AppDataSource.getRepository(Ticket_1.Ticket);
 const teamRepository = data_source_1.AppDataSource.getRepository(Team_1.Team);
+const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
 (() => __awaiter(void 0, void 0, void 0, function* () {
     try {
         (0, logger_1.default)('> BOT: Attempting to update commands...', 'log');
@@ -93,7 +102,7 @@ exports.bot.on("messageCreate", (message) => __awaiter(void 0, void 0, void 0, f
                 const assignEmbed = new discord_js_1.EmbedBuilder()
                     .setColor('#00ff00')
                     .setTitle('Ticket Assigned')
-                    .setDescription(`This ticket has been assigned to ${message.author}`)
+                    .setDescription(`This ticket has been assigned to ${message.author} via discord.`)
                     .setTimestamp();
                 yield thread.send({ embeds: [assignEmbed] });
             }
@@ -145,6 +154,9 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
             const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}`;
             yield interaction.followUp({ content: `View open tickets here: ${redirectUrl}`, ephemeral: true });
         }
+        else if (interaction.commandName === "blacklist") {
+            yield (0, blacklist_1.blacklistUser)(interaction);
+        }
     }
     if (interaction.isButton()) {
         const [action, ticketId] = interaction.customId.split("_");
@@ -160,6 +172,11 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                 .setFooter({ text: 'Lovac', iconURL: (_d = exports.bot.user) === null || _d === void 0 ? void 0 : _d.displayAvatarURL() })
                 .setTimestamp();
             yield interaction.reply({ content: `<@${interaction.user.id}>,`, embeds: [welcomeEmbed] });
+            const user = yield userRepository.findOne({ where: { discordId: interaction.user.id } });
+            if (user) {
+                user.openTickets -= 1;
+                yield userRepository.save(user);
+            }
             setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
                 var _a;
                 if (ticket === null || ticket === void 0 ? void 0 : ticket.threadId) {
@@ -191,6 +208,33 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                 return;
             }
             try {
+                const discordId = interaction.user.id;
+                let user = yield userRepository.findOne({ where: { discordId } });
+                if (user) {
+                    if (user.isBlacklisted) {
+                        yield interaction.reply({ content: 'You are currently blacklisted from creating tickets.', ephemeral: true });
+                        return;
+                    }
+                    if (user.openTickets >= 3) {
+                        yield interaction.reply({ content: 'You have reached the maximum number of open tickets.', ephemeral: true });
+                        return;
+                    }
+                    if (user.totalTickets >= 50) {
+                        yield interaction.reply({ content: 'You have reached the maximum number of total tickets. Please contact <@721017166652244018>', ephemeral: true });
+                        return;
+                    }
+                    user.totalTickets += 1;
+                    user.openTickets += 1;
+                    yield userRepository.save(user);
+                }
+                else {
+                    user = new User_1.User();
+                    user.discordId = discordId;
+                    user.totalTickets = 1;
+                    user.openTickets = 1;
+                    user.isBlacklisted = false;
+                    yield userRepository.save(user);
+                }
                 const tickets = yield ticketRepository.find();
                 const ticketCount = tickets.length;
                 const newTicketNumber = ticketCount + 1;
