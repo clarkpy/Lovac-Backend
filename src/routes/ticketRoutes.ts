@@ -3,6 +3,8 @@ import { AppDataSource } from "../data-source";
 import { Ticket } from "../models/Ticket";
 import dotenv from 'dotenv';
 import log from "../logger";
+import { IsNull } from "typeorm";
+
 dotenv.config();
 
 const router = Router();
@@ -60,6 +62,68 @@ router.get("/open", async (req: Request, res: Response) => {
         log(`${error}`, "error");
         log('=================================================================================================', 'error');
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+});
+
+router.get("/closed", async (req: Request, res: Response) => {
+    try {
+        const closedTickets = await AppDataSource.manager.find(Ticket, {
+            where: { status: "Closed" },
+            select: ["id"],
+        });
+        const closedTicketIds = closedTickets.map(ticket => ticket.id);
+        res.json(closedTicketIds);
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching closed tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+});
+
+router.get("/unassigned", async (req: Request, res: Response) => {
+    try {
+        const unassignedTickets = await AppDataSource.manager.find(Ticket, {
+            where: { assignee: IsNull() },
+            select: ["id"],
+        });
+        const unassignedTicketIds = unassignedTickets.map(ticket => ticket.id);
+        res.json(unassignedTicketIds);
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching unassigned tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+});
+
+router.post("/assigned", async (req: Request, res: Response) => {
+    try {
+        const { staffId } = req.body;
+        if (!staffId) {
+            res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
+            return;
+        }
+        const assignedTickets = await AppDataSource.manager.find(Ticket, {
+            where: { assignee: staffId },
+            select: ["id"],
+        });
+        const assignedTicketIds = assignedTickets.map(ticket => ticket.id);
+        res.json(assignedTicketIds);
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching assigned tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ message: "A little hiccup has occurred; please try again later.", error });
     }
 });
 
