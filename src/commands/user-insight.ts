@@ -7,7 +7,7 @@ import { AppDataSource } from "../data-source";
 import { User } from "../models/User";
 import { bot } from "../discord-bot";
 
-export const insightUser = async (interaction: CommandInteraction) => {
+export const userInsight = async (interaction: CommandInteraction) => {
     const userId = interaction.options.get('user')?.value?.toString();
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({ where: { discordId: userId } });
@@ -60,5 +60,5 @@ export const insightUser = async (interaction: CommandInteraction) => {
         }
 
     await interaction.reply({ embeds: [embed] });
-
+    return;
 }

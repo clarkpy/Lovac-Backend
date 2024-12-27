@@ -12,12 +12,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.insightUser = void 0;
+exports.userInsight = void 0;
 const discord_js_1 = require("discord.js");
 const data_source_1 = require("../data-source");
 const User_1 = require("../models/User");
 const discord_bot_1 = require("../discord-bot");
-const insightUser = (interaction) => __awaiter(void 0, void 0, void 0, function* () {
+const userInsight = (interaction) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e;
     const userId = (_b = (_a = interaction.options.get('user')) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.toString();
     const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
@@ -59,5 +59,6 @@ const insightUser = (interaction) => __awaiter(void 0, void 0, void 0, function*
         embed.addFields({ name: 'Staff', value: '✅', inline: true });
     }
     yield interaction.reply({ embeds: [embed] });
+    return;
 });
-exports.insightUser = insightUser;
+exports.userInsight = userInsight;
