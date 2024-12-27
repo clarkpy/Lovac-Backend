@@ -1,10 +1,12 @@
-import { Client, GatewayIntentBits, ChannelType, ActivityType, TextChannel, ThreadChannel, PermissionsBitField, REST, Routes, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Guild } from "discord.js";
+import { Client, GatewayIntentBits, ChannelType, ActivityType, TextChannel, ThreadChannel, PermissionsBitField, REST, Routes, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Guild, SlashCommandBuilder } from "discord.js";
 import { Ticket } from "./models/Ticket";
 import { Message as TicketMessage } from "./models/Message";
 import { AppDataSource } from "./data-source";
 import { Team } from "./models/Team";
+import { User } from "./models/User"; // Adjust the import path as necessary
 import dotenv from "dotenv";
 import log from "./logger";
+import { blacklistUser } from './commands/blacklist';
 
 dotenv.config();
 
@@ -29,6 +31,13 @@ const commands = [
         name: 'unassign',
         description: 'Unassign yourself from the current ticket',
     },
+    new SlashCommandBuilder()
+    .setName('blacklist')
+    .setDescription('Blacklist a user')
+    .addUserOption(option => 
+        option.setName('user')
+    .setDescription('The user to blacklist')
+    .setRequired(true)),
 ];
 
 const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_BOT_TOKEN || '');
@@ -42,6 +51,7 @@ bot.login(process.env.DISCORD_BOT_TOKEN).then(() => {
 
 const ticketRepository = AppDataSource.getRepository(Ticket);
 const teamRepository = AppDataSource.getRepository(Team);
+const userRepository = AppDataSource.getRepository(User);
 
 (async () => {
     try {
@@ -93,7 +103,7 @@ bot.on("messageCreate", async (message) => {
                 const assignEmbed = new EmbedBuilder()
                     .setColor('#00ff00')
                     .setTitle('Ticket Assigned')
-                    .setDescription(`This ticket has been assigned to ${message.author}`)
+                    .setDescription(`This ticket has been assigned to ${message.author} via discord.`)
                     .setTimestamp();
 
                 await thread.send({ embeds: [assignEmbed] });
@@ -154,6 +164,8 @@ bot.on("interactionCreate", async (interaction) => {
 
             const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}`;
             await interaction.followUp({ content: `View open tickets here: ${redirectUrl}`, ephemeral: true });
+        } else if (interaction.commandName === "blacklist") {
+            await blacklistUser(interaction);
         }
     }
 
@@ -174,6 +186,13 @@ bot.on("interactionCreate", async (interaction) => {
                 .setTimestamp();
 
             await interaction.reply({ content: `<@${interaction.user.id}>,`, embeds: [welcomeEmbed] });
+
+            const user = await userRepository.findOne({ where: { discordId: interaction.user.id } });
+            if (user) {
+                user.openTickets -= 1;
+                await userRepository.save(user);
+            }
+
 
             setTimeout(async () => {
                 if (ticket?.threadId) {
@@ -208,6 +227,40 @@ bot.on("interactionCreate", async (interaction) => {
             }
 
             try {
+                const discordId = interaction.user.id;
+
+                let user = await userRepository.findOne({ where: { discordId } });
+
+                if (user) {
+
+                    if (user.isBlacklisted) {
+                        await interaction.reply({ content: 'You are currently blacklisted from creating tickets.', ephemeral: true });
+                        return;
+                    }
+
+                    if (user.openTickets >= 3) {
+                        await interaction.reply({ content: 'You have reached the maximum number of open tickets.', ephemeral: true });
+                        return;
+                    }
+
+                    if (user.totalTickets >= 50) {
+                        await interaction.reply({ content: 'You have reached the maximum number of total tickets. Please contact <@721017166652244018>', ephemeral: true });
+                        return;
+                    }
+
+                    user.totalTickets += 1;
+                    user.openTickets += 1;
+                    await userRepository.save(user);
+
+                } else {
+                    user = new User();
+                    user.discordId = discordId;
+                    user.totalTickets = 1;
+                    user.openTickets = 1;
+                    user.isBlacklisted = false;
+                    await userRepository.save(user);
+                }
+
                 const tickets = await ticketRepository.find();
                 const ticketCount = tickets.length;
                 const newTicketNumber = ticketCount + 1;
