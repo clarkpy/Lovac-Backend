@@ -70,7 +70,7 @@ router.get("/all", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
-router.get("/open", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/open", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const openTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
             where: { status: "Open" },
@@ -89,7 +89,7 @@ router.get("/open", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
-router.get("/closed", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/closed", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const closedTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
             where: { status: "Closed" },
@@ -108,7 +108,7 @@ router.get("/closed", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
-router.get("/unassigned", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/unassigned", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const unassignedTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
             where: { assignee: (0, typeorm_1.IsNull)() },

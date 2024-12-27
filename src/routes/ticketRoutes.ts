@@ -61,7 +61,7 @@ router.get("/all", async (req: Request, res: Response) => {
     }
 });
 
-router.get("/open", async (req: Request, res: Response) => {
+router.post("/open", async (req: Request, res: Response) => {
     try {
         const openTickets = await AppDataSource.manager.find(Ticket, {
             where: { status: "Open" },
@@ -80,7 +80,7 @@ router.get("/open", async (req: Request, res: Response) => {
     }
 });
 
-router.get("/closed", async (req: Request, res: Response) => {
+router.post("/closed", async (req: Request, res: Response) => {
     try {
         const closedTickets = await AppDataSource.manager.find(Ticket, {
             where: { status: "Closed" },
@@ -99,7 +99,7 @@ router.get("/closed", async (req: Request, res: Response) => {
     }
 });
 
-router.get("/unassigned", async (req: Request, res: Response) => {
+router.post("/unassigned", async (req: Request, res: Response) => {
     try {
         const unassignedTickets = await AppDataSource.manager.find(Ticket, {
             where: { assignee: IsNull() },
