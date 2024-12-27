@@ -46,6 +46,21 @@ router.get("/:id", async (req: Request, res: Response) => {
     }
 });
 
+router.get("/all", async (req: Request, res: Response) => {
+    try {
+        const allTickets = await AppDataSource.manager.find(Ticket);
+        res.json(allTickets);
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching all tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+});
+
 router.get("/open", async (req: Request, res: Response) => {
     try {
         const openTickets = await AppDataSource.manager.find(Ticket, {

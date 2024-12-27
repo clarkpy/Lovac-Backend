@@ -55,6 +55,21 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
+router.get("/all", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const allTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket);
+        res.json(allTickets);
+    }
+    catch (error) {
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error fetching all tickets:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+}));
 router.get("/open", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const openTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
