@@ -17,6 +17,7 @@ const data_source_1 = require("../data-source");
 const Tag_1 = require("../models/Tag");
 const Ticket_1 = require("../models/Ticket");
 const dotenv_1 = __importDefault(require("dotenv"));
+const logger_1 = __importDefault(require("../logger"));
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 router.get("/tags", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -91,7 +92,12 @@ router.post("/create-tag", (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(201).json({ success: true, tag: savedTag });
     }
     catch (error) {
-        console.error("Error creating tag:", error);
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error saving tag:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
         res.status(500).json({ error: "A little hiccup has occurred; please try again later." });
     }
 }));

@@ -3,6 +3,7 @@ import { AppDataSource } from "../data-source";
 import { Tag } from "../models/Tag";
 import { Ticket } from "../models/Ticket";
 import dotenv from "dotenv";
+import log from "../logger";
 
 dotenv.config();
 
@@ -100,7 +101,12 @@ router.post("/create-tag", async (req, res) => {
         const savedTag = await AppDataSource.manager.save(newTag);
         res.status(201).json({ success: true, tag: savedTag });
     } catch (error) {
-        console.error("Error creating tag:", error);
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error saving tag:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
         res.status(500).json({ error: "A little hiccup has occurred; please try again later." });
     }
 });
