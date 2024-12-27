@@ -6,6 +6,7 @@ import axios from 'axios';
 import { EmbedBuilder, TextChannel, PermissionsBitField } from 'discord.js';
 import { bot } from '../discord-bot';
 import dotenv from 'dotenv';
+import log from '../logger';
 
 dotenv.config();
 
@@ -77,7 +78,12 @@ router.post('/new-message', async (req: Request, res: Response) => {
 
         res.status(201).json({ successMessage: 'Message created successfully.', createdMessage: message });
     } catch (error) {
-        console.error('Error creating message:', error);
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error creating message:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
         res.status(500).json({ error: "Oh no! A flurry of problems has caused a little chaos in our cozy corner!" });
     }
 });

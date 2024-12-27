@@ -20,6 +20,7 @@ const axios_1 = __importDefault(require("axios"));
 const discord_js_1 = require("discord.js");
 const discord_bot_1 = require("../discord-bot");
 const dotenv_1 = __importDefault(require("dotenv"));
+const logger_1 = __importDefault(require("../logger"));
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 router.post('/new-message', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -77,7 +78,12 @@ router.post('/new-message', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(201).json({ successMessage: 'Message created successfully.', createdMessage: message });
     }
     catch (error) {
-        console.error('Error creating message:', error);
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error creating message:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
         res.status(500).json({ error: "Oh no! A flurry of problems has caused a little chaos in our cozy corner!" });
     }
 }));
