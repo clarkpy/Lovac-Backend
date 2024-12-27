@@ -1,4 +1,3 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -8,32 +7,35 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Tag = void 0;
-const typeorm_1 = require("typeorm");
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 let Tag = class Tag {
+    id;
+    tagShort; // [Example] "Dev App"
+    tagLong; // [Example] "Developer Application"
+    tagColor; // [Example] "#FF0000"
+    tagIcon; // [Example] "🛠️"
 };
-exports.Tag = Tag;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    PrimaryGeneratedColumn(),
     __metadata("design:type", Number)
 ], Tag.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Tag.prototype, "tagShort", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Tag.prototype, "tagLong", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Tag.prototype, "tagColor", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Tag.prototype, "tagIcon", void 0);
-exports.Tag = Tag = __decorate([
-    (0, typeorm_1.Entity)()
+Tag = __decorate([
+    Entity()
 ], Tag);
+export { Tag };

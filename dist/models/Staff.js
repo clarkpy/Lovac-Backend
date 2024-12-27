@@ -1,4 +1,3 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -8,44 +7,50 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Staff = void 0;
-const typeorm_1 = require("typeorm");
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 let Staff = class Staff {
+    id;
+    discordId;
+    discordUsername;
+    discordDisplayName;
+    discordRole;
+    discordAvatar;
+    totalTickets;
+    totalOpenTickets;
 };
-exports.Staff = Staff;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    PrimaryGeneratedColumn(),
     __metadata("design:type", Number)
 ], Staff.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Staff.prototype, "discordId", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Staff.prototype, "discordUsername", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Staff.prototype, "discordDisplayName", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Staff.prototype, "discordRole", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Staff.prototype, "discordAvatar", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", Number)
 ], Staff.prototype, "totalTickets", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", Number)
 ], Staff.prototype, "totalOpenTickets", void 0);
-exports.Staff = Staff = __decorate([
-    (0, typeorm_1.Entity)()
+Staff = __decorate([
+    Entity()
 ], Staff);
+export { Staff };

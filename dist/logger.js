@@ -1,26 +1,24 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const chalk_1 = __importDefault(require("chalk"));
-const log = (message, type) => {
-    switch (type) {
-        case 'error':
-            console.log(chalk_1.default.bgRed.black(' ERROR '), chalk_1.default.red(message));
-            break;
-        case 'log':
-            console.log(chalk_1.default.bgBlue.black(' LOG '), chalk_1.default.blue(message));
-            break;
-        case 'success':
-            console.log(chalk_1.default.bgGreen.black(' SUCCESS '), chalk_1.default.green(message));
-            break;
-        case 'warning':
-            console.log(chalk_1.default.bgYellow.black(' WARNING '), chalk_1.default.yellow(message));
-            break;
-        default:
-            console.log(message);
-            break;
+const colors = {
+    reset: "\x1b[0m",
+    error: {
+        prefix: "\x1b[41m\x1b[30m",
+        message: "\x1b[31m"
+    },
+    log: {
+        prefix: "\x1b[44m\x1b[30m",
+        message: "\x1b[34m"
+    },
+    success: {
+        prefix: "\x1b[42m\x1b[30m",
+        message: "\x1b[32m"
+    },
+    warning: {
+        prefix: "\x1b[43m\x1b[30m",
+        message: "\x1b[33m"
     }
 };
-exports.default = log;
+const log = (message, type) => {
+    const color = colors[type];
+    console.log(`${color.prefix} ${type.toUpperCase()} ${colors.reset} ${color.message}${message}${colors.reset}`);
+};
+export default log;

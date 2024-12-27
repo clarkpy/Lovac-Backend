@@ -1,76 +1,62 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const data_source_1 = require("../data-source");
-const Team_1 = require("../models/Team");
-const Ticket_1 = require("../models/Ticket");
-const Staff_1 = require("../models/Staff");
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
-const router = (0, express_1.Router)();
-const teamRepository = data_source_1.AppDataSource.getRepository(Team_1.Team);
-const ticketRepository = data_source_1.AppDataSource.getRepository(Ticket_1.Ticket);
-const staffRepository = data_source_1.AppDataSource.getRepository(Staff_1.Staff);
-router.post("/assign", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+import { Router } from "express";
+import { AppDataSource } from "../data-source";
+import { Team } from "../models/Team";
+import { Ticket } from "../models/Ticket";
+import { Staff } from "../models/Staff";
+import dotenv from 'dotenv';
+dotenv.config();
+const router = Router();
+const teamRepository = AppDataSource.getRepository(Team);
+const ticketRepository = AppDataSource.getRepository(Ticket);
+const staffRepository = AppDataSource.getRepository(Staff);
+router.post("/assign", async (req, res) => {
     try {
         const { staffId, ticketId } = req.body;
         if (!staffId || !ticketId) {
             res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const ticket = yield ticketRepository.findOne({ where: { id: ticketId } });
+        const ticket = await ticketRepository.findOne({ where: { id: ticketId } });
         if (!ticket) {
             res.status(404).json({ message: "This ticket seems to have wandered off; we can't find it anywhere." });
             return;
         }
         ticket.assignee = staffId;
-        yield ticketRepository.save(ticket);
+        await ticketRepository.save(ticket);
         res.json({ message: "Ticket assigned successfully" });
     }
     catch (error) {
         res.status(500).json({ message: "A hiccup has occurred; please try again later.", error });
     }
-}));
-router.post("/unassign", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+router.post("/unassign", async (req, res) => {
     try {
         const { ticketId } = req.body;
         if (!ticketId) {
             res.status(400).json({ message: "It seems details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const ticket = yield ticketRepository.findOne({ where: { id: ticketId } });
+        const ticket = await ticketRepository.findOne({ where: { id: ticketId } });
         if (!ticket) {
             res.status(404).json({ message: "This ticket seems to have wandered off; we can't find it anywhere." });
             return;
         }
         ticket.assignee = null;
-        yield ticketRepository.save(ticket);
+        await ticketRepository.save(ticket);
         res.json({ message: "Ticket unassigned successfully" });
     }
     catch (error) {
         res.status(500).json({ message: "A hiccup has occurred; please try again later.", error });
     }
-}));
-router.get("/assignee", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+router.get("/assignee", async (req, res) => {
     try {
         const { ticketId } = req.body;
         if (!ticketId) {
             res.status(400).json({ message: "It seems details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const ticket = yield ticketRepository.findOne({
+        const ticket = await ticketRepository.findOne({
             where: { id: ticketId },
             relations: ["assignedGroup"]
         });
@@ -83,56 +69,56 @@ router.get("/assignee", (req, res) => __awaiter(void 0, void 0, void 0, function
     catch (error) {
         res.status(500).json({ message: "A hiccup has occurred; please try again later.", error });
     }
-}));
-router.post("/assign-team", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+router.post("/assign-team", async (req, res) => {
     try {
         const { teamId, ticketId } = req.body;
         if (!teamId || !ticketId) {
             res.status(400).json({ message: "It seems details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const ticket = yield ticketRepository.findOne({ where: { id: ticketId } });
-        const team = yield teamRepository.findOne({ where: { id: teamId } });
+        const ticket = await ticketRepository.findOne({ where: { id: ticketId } });
+        const team = await teamRepository.findOne({ where: { id: teamId } });
         if (!ticket || !team) {
             res.status(404).json({ message: "This ticket or team seems to have wandered off; we can't find it anywhere." });
             return;
         }
         ticket.assignedGroup = team;
-        yield ticketRepository.save(ticket);
+        await ticketRepository.save(ticket);
         res.json({ message: "Ticket assigned to team successfully" });
     }
     catch (error) {
         res.status(500).json({ message: "A little hiccup has occurred; please try again later.", error });
     }
-}));
-router.post("/unassign-team", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+router.post("/unassign-team", async (req, res) => {
     try {
         const { ticketId } = req.body;
         if (!ticketId) {
             res.status(400).json({ message: "It seems details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const ticket = yield ticketRepository.findOne({ where: { id: ticketId } });
+        const ticket = await ticketRepository.findOne({ where: { id: ticketId } });
         if (!ticket) {
             res.status(404).json({ message: "This ticket seems to have wandered off; we can't find it anywhere." });
             return;
         }
         ticket.assignedGroup = null;
-        yield ticketRepository.save(ticket);
+        await ticketRepository.save(ticket);
         res.json({ message: "Ticket unassigned from team successfully" });
     }
     catch (error) {
         res.status(500).json({ message: "A hiccup has occurred; please try again later.", error });
     }
-}));
-router.get("/assigned-team", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+router.get("/assigned-team", async (req, res) => {
     try {
         const { ticketId } = req.body;
         if (!ticketId) {
             res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const ticket = yield ticketRepository.findOne({
+        const ticket = await ticketRepository.findOne({
             where: { id: ticketId },
             relations: ["assignedGroup"]
         });
@@ -145,38 +131,38 @@ router.get("/assigned-team", (req, res) => __awaiter(void 0, void 0, void 0, fun
     catch (error) {
         res.status(500).json({ message: "A little hiccup has occurred; please try again later.", error });
     }
-}));
-router.post("/team/add", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+router.post("/team/add", async (req, res) => {
     try {
         const { staffId, teamId } = req.body;
         if (!staffId || !teamId) {
             res.status(400).json({ message: "It seems details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const team = yield teamRepository.findOne({ where: { id: teamId } });
-        const staff = yield staffRepository.findOne({ where: { id: staffId } });
+        const team = await teamRepository.findOne({ where: { id: teamId } });
+        const staff = await staffRepository.findOne({ where: { id: staffId } });
         if (!team || !staff) {
             res.status(404).json({ message: "This team or staff appears to be elusive; we can't locate it right now." });
             return;
         }
         if (!team.members.includes(staffId)) {
             team.members.push(staffId);
-            yield teamRepository.save(team);
+            await teamRepository.save(team);
         }
         res.json({ message: "Staff added to team successfully" });
     }
     catch (error) {
         res.status(500).json({ message: "A little hiccup has occurred; please try again later.", error });
     }
-}));
-router.get("/team/members", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+router.get("/team/members", async (req, res) => {
     try {
         const { teamId } = req.body;
         if (!teamId) {
             res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const team = yield teamRepository.findOne({ where: { id: teamId } });
+        const team = await teamRepository.findOne({ where: { id: teamId } });
         if (!team) {
             res.status(404).json({ message: "This team appears to be elusive; we can't locate it right now." });
             return;
@@ -186,33 +172,33 @@ router.get("/team/members", (req, res) => __awaiter(void 0, void 0, void 0, func
     catch (error) {
         res.status(500).json({ message: "A little hiccup has occurred; please try again later.", error });
     }
-}));
-router.post("/team/new", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+router.post("/team/new", async (req, res) => {
     try {
         const { Name, Color, Icon } = req.body;
         if (!Name || !Color || !Icon) {
             res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const team = new Team_1.Team();
+        const team = new Team();
         team.name = Name;
         team.color = Color;
         team.icon = Icon;
         team.members = [];
-        yield teamRepository.save(team);
+        await teamRepository.save(team);
         res.json({ message: "Team created successfully", team });
     }
     catch (error) {
         res.status(500).json({ message: "A little hiccup has occurred; please try again later.", error });
     }
-}));
-router.get("/team", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+router.get("/team", async (req, res) => {
     try {
-        const teams = yield teamRepository.find();
+        const teams = await teamRepository.find();
         res.json(teams);
     }
     catch (error) {
         res.status(500).json({ message: "A little hiccup has occurred; please try again later.", error });
     }
-}));
-exports.default = router;
+});
+export default router;
