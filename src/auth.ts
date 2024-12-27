@@ -8,6 +8,7 @@ import { User, Client, GatewayIntentBits } from 'discord.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { Request } from 'express';
+import log from './logger';
 
 dotenv.config();
 
@@ -28,7 +29,6 @@ client.login(process.env.DISCORD_BOT_TOKEN);
 
 const clientReady = new Promise<void>((resolve) => {
     client.once('ready', () => {
-        console.log(`Bot logged in as ${client.user?.tag}`);
         resolve();
     });
 });
@@ -42,12 +42,10 @@ interface AuthenticatedRequest extends Request {
 }
 
 passport.serializeUser((user, done) => {
-    console.log("Serializing user:", user);
     done(null, user);
 });
 
 passport.deserializeUser((obj: any, done) => {
-    console.log("Deserializing user:", obj);
     done(null, obj as User | null);
 });
 
@@ -95,7 +93,12 @@ passport.use(new DiscordStrategy({
         }
         return done(null, false, { message: 'You do not have permission to register as staff.' });
     } catch (error) {
-        console.error("Error fetching member:", error);
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log('Error fetching member:', 'error');
+        log(`${error}`, 'error');
+        log('=================================================================================================', 'error');
         return done(error);
     }
 }));
@@ -121,14 +124,15 @@ app.get('/auth/discord/callback',
 
         const discordId = (req.user as Profile).id;
         if (!discordId) {
-            console.error('Discord ID not found in user profile');
+            log('=================================================================================================', 'error');
+            log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+            log('', 'error');
+            log('Couldn\'t find the Discord ID in the user profile.', 'error');
+            log('=================================================================================================', 'error');
             return res.redirect('/register');
         }
 
         req.session.discordId = discordId;
-        
-        console.log('Discord ID:', discordId);
-        console.log('Staff check URL:', `${process.env.LOVAC_BACKEND_URL}/staff/check-staff`);
 
         try {
             const response = await fetch(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
@@ -142,8 +146,6 @@ app.get('/auth/discord/callback',
             if (!response.ok) throw new Error(`Failed to fetch staff data ${response.status}`);
 
             const staffData = await response.json();
-            console.log('Return data:', staffData);
-            console.log('Staff ID:', staffData.id);
             
             res.cookie('staffId', staffData.id, {
                 httpOnly: false,
@@ -155,8 +157,12 @@ app.get('/auth/discord/callback',
             res.setHeader('X-Staff-Id', staffData.id);
             res.redirect(process.env.LOVAC_FRONTEND_URL || 'https://tickets.minecrush.gg');
         } catch (error) {
-            console.error('Error fetching staff ID:', error);
-            return res.redirect('/register');
+            log('=================================================================================================', 'error');
+            log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+            log('', 'error');
+            log('Stack Trace:', 'error');
+            log(`${error}`, 'error');
+            log('=================================================================================================', 'error');
         }
     }
 );
@@ -167,7 +173,7 @@ app.get('/auth/staffId', (req, res) => {
     if (staffId) {
       res.json({ staffId });
     } else {
-      res.status(400).json({ error: 'No staffId cookie found' });
+      res.status(400).json({ error: 'You are not logged in.' });
     }
   });
 
