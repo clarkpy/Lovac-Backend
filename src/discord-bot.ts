@@ -3,10 +3,11 @@ import { Ticket } from "./models/Ticket";
 import { Message as TicketMessage } from "./models/Message";
 import { AppDataSource } from "./data-source";
 import { Team } from "./models/Team";
-import { User } from "./models/User"; // Adjust the import path as necessary
+import { User } from "./models/User";
 import dotenv from "dotenv";
 import log from "./logger";
 import { blacklistUser } from './commands/blacklist';
+import { userInsight } from './commands/user-insight';
 
 dotenv.config();
 
@@ -173,6 +174,8 @@ bot.on("interactionCreate", async (interaction) => {
             await interaction.followUp({ content: `View open tickets here: ${redirectUrl}`, ephemeral: true });
         } else if (interaction.commandName === "blacklist") {
             await blacklistUser(interaction);
+        } else if (interaction.commandName === "insight") {
+            await userInsight(interaction);
         }
     }
 

@@ -17,10 +17,11 @@ const discord_js_1 = require("discord.js");
 const Ticket_1 = require("./models/Ticket");
 const data_source_1 = require("./data-source");
 const Team_1 = require("./models/Team");
-const User_1 = require("./models/User"); // Adjust the import path as necessary
+const User_1 = require("./models/User");
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("./logger"));
 const blacklist_1 = require("./commands/blacklist");
+const user_insight_1 = require("./commands/user-insight");
 dotenv_1.default.config();
 exports.bot = new discord_js_1.Client({
     intents: [
@@ -162,6 +163,9 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
         }
         else if (interaction.commandName === "blacklist") {
             yield (0, blacklist_1.blacklistUser)(interaction);
+        }
+        else if (interaction.commandName === "insight") {
+            yield (0, user_insight_1.userInsight)(interaction);
         }
     }
     if (interaction.isButton()) {
