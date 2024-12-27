@@ -4,6 +4,7 @@ import { Message as TicketMessage } from "./models/Message";
 import { AppDataSource } from "./data-source";
 import { Team } from "./models/Team";
 import dotenv from "dotenv";
+import log from "./logger";
 
 dotenv.config();
 
@@ -44,13 +45,12 @@ const teamRepository = AppDataSource.getRepository(Team);
 
 (async () => {
     try {
-        console.log('Started refreshing application (/) commands.');
-
+        log('> BOT: Attempting to update commands...', 'log');
         await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
             body: commands,
         });
 
-        console.log('Successfully reloaded application (/) commands.');
+        log('> BOT: Commands have been updated.', 'success');
     } catch (error) {
         console.error('Error registering commands:', error);
     }
@@ -192,7 +192,6 @@ bot.on("interactionCreate", async (interaction) => {
         } else if (action === "denyClose") {
             await interaction.reply({ content: `Ticket ${ticketId} remains open.`, ephemeral: false });
         } else if (action === "createticket") {
-            console.log('Button interaction received:', interaction);
 
             const channel = interaction.channel;
 
@@ -256,7 +255,10 @@ bot.on("interactionCreate", async (interaction) => {
                         activities: [{ name: `${openTicketCount} open tickets`, type: ActivityType.Watching }],
                         status: "dnd",
                     });
-                    console.log('Ticket saved:', ticket);
+                    log('> BOT: Ticket created.', 'log');
+                    log(`>  TICKET: ${ticket.id}/${ticket.threadId}`, 'log');
+                    log(`>  STATUS: ${ticket.status}`, 'log');
+                    log(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
                     checkOpenTickets();
                 }
             } catch (error) {

@@ -11,11 +11,15 @@ import teamRoutes from "./routes/teamRoutes";
 import auth from "./auth";
 import closeTicketRoutes from "./routes/closeTicketRoutes";
 import dotenv from "dotenv";
+import log from "./logger";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.LOVAC_BACKEND_URL_PORT || 3000;
+
+log("=====================================================================", "log");
+log("Starting Lovac Backend...", "log");
 
 app.use(cors({
     origin: process.env.LOVAC_FRONTEND_URL,
@@ -26,27 +30,28 @@ app.use(cors({
 
 app.use(express.json());
 
-console.log("Initializing authentication routes...");
+log("Registering authentication routes...", "log");
 app.use(auth);
-console.log("Authentication routes registered.");
+log("Authentication routes registered.", "success");
 
-console.log("Registering API routes...");
+log("Registering API routes...", "log");
 app.use("/tickets", ticketRoutes);
 app.use("/tags", tagRoutes);
 app.use("/staff", staffRoutes);
 app.use("/categories", categoryRoutes);
 app.use("/api", closeTicketRoutes, messageRoutes, tagRoutes, teamRoutes);
-console.log("API routes registered.");
+log("API routes registered.", "success");
 
-console.log("Initializing database connection...");
+log("Connecting to the database...", "log");
 AppDataSource.initialize()
     .then(() => {
-        console.log("Data Source has been initialized!");
+        log("Database connected.", "success");
         app.listen(PORT, () => {
-            console.log(`Server running on ${process.env.LOVAC_BACKEND_URL_SHORT}:${PORT}`);
+            log(`Server started on port ${PORT}.`, "success");
+            log("=====================================================================", "log");
         });
     })
     .catch((err) => {
-        console.error("Error during Data Source initialization", err);
+        log("Database connection failed.", "error");
         console.error(err.stack);
     });

@@ -18,6 +18,7 @@ const Ticket_1 = require("./models/Ticket");
 const data_source_1 = require("./data-source");
 const Team_1 = require("./models/Team");
 const dotenv_1 = __importDefault(require("dotenv"));
+const logger_1 = __importDefault(require("./logger"));
 dotenv_1.default.config();
 exports.bot = new discord_js_1.Client({
     intents: [
@@ -51,11 +52,11 @@ const ticketRepository = data_source_1.AppDataSource.getRepository(Ticket_1.Tick
 const teamRepository = data_source_1.AppDataSource.getRepository(Team_1.Team);
 (() => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('Started refreshing application (/) commands.');
+        (0, logger_1.default)('> BOT: Attempting to update commands...', 'log');
         yield rest.put(discord_js_1.Routes.applicationGuildCommands(clientId, guildId), {
             body: commands,
         });
-        console.log('Successfully reloaded application (/) commands.');
+        (0, logger_1.default)('> BOT: Commands have been updated.', 'success');
     }
     catch (error) {
         console.error('Error registering commands:', error);
@@ -178,7 +179,6 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
             yield interaction.reply({ content: `Ticket ${ticketId} remains open.`, ephemeral: false });
         }
         else if (action === "createticket") {
-            console.log('Button interaction received:', interaction);
             const channel = interaction.channel;
             if (!channel) {
                 console.error('Channel is undefined.');
@@ -230,7 +230,10 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                         activities: [{ name: `${openTicketCount} open tickets`, type: discord_js_1.ActivityType.Watching }],
                         status: "dnd",
                     });
-                    console.log('Ticket saved:', ticket);
+                    (0, logger_1.default)('> BOT: Ticket created.', 'log');
+                    (0, logger_1.default)(`>  TICKET: ${ticket.id}/${ticket.threadId}`, 'log');
+                    (0, logger_1.default)(`>  STATUS: ${ticket.status}`, 'log');
+                    (0, logger_1.default)(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
                     checkOpenTickets();
                 }
             }
