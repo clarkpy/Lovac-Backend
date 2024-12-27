@@ -8,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const data_source_1 = require("../data-source");
 const Team_1 = require("../models/Team");
+const logger_1 = __importDefault(require("../logger"));
 const teams = [
     {
         name: "Admin Team",
@@ -42,6 +46,8 @@ function initializeTeams() {
         try {
             yield data_source_1.AppDataSource.initialize();
             const teamRepository = data_source_1.AppDataSource.getRepository(Team_1.Team);
+            (0, logger_1.default)('=================================================================================================', 'log');
+            (0, logger_1.default)('> Initializing teams...', 'log');
             for (const teamData of teams) {
                 const existingTeam = yield teamRepository.findOne({ where: { name: teamData.name } });
                 if (!existingTeam) {
@@ -51,16 +57,22 @@ function initializeTeams() {
                     team.icon = teamData.icon;
                     team.members = teamData.members;
                     yield teamRepository.save(team);
-                    console.log(`Created team: ${team.name}`);
+                    (0, logger_1.default)(`> TEAM: ${team.name}`, 'log');
                 }
                 else {
-                    console.log(`Team ${teamData.name} already exists`);
+                    (0, logger_1.default)(`> TEAM: ${teamData.name} already exists`, 'warning');
                 }
             }
-            console.log("Team initialization completed successfully");
+            (0, logger_1.default)('> Teams initialized successfully.', 'success');
+            (0, logger_1.default)('=================================================================================================', 'log');
         }
         catch (error) {
-            console.error("Error initializing teams:", error);
+            (0, logger_1.default)('=================================================================================================', 'error');
+            (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+            (0, logger_1.default)('', 'error');
+            (0, logger_1.default)("Error initializing teams:", "error");
+            (0, logger_1.default)(`${error}`, "error");
+            (0, logger_1.default)('=================================================================================================', 'error');
         }
         finally {
             yield data_source_1.AppDataSource.destroy();

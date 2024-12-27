@@ -1,5 +1,6 @@
 import { AppDataSource } from "../data-source";
 import { Team } from "../models/Team";
+import log from "../logger";
 
 const teams = [
     {
@@ -33,6 +34,9 @@ async function initializeTeams() {
         await AppDataSource.initialize();
         const teamRepository = AppDataSource.getRepository(Team);
 
+        log('=================================================================================================', 'log');
+        log('> Initializing teams...', 'log');
+
         for (const teamData of teams) {
             const existingTeam = await teamRepository.findOne({ where: { name: teamData.name } });
             if (!existingTeam) {
@@ -42,15 +46,21 @@ async function initializeTeams() {
                 team.icon = teamData.icon;
                 team.members = teamData.members;
                 await teamRepository.save(team);
-                console.log(`Created team: ${team.name}`);
+                log(`> TEAM: ${team.name}`, 'log');
             } else {
-                console.log(`Team ${teamData.name} already exists`);
+                log(`> TEAM: ${teamData.name} already exists`, 'warning');
             }
         }
 
-        console.log("Team initialization completed successfully");
+        log('> Teams initialized successfully.', 'success');
+        log('=================================================================================================', 'log');
     } catch (error) {
-        console.error("Error initializing teams:", error);
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error initializing teams:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
     } finally {
         await AppDataSource.destroy();
     }
