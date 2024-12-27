@@ -2,6 +2,7 @@ import { Router } from "express";
 import { AppDataSource } from "../data-source";
 import { Staff } from "../models/Staff";
 import dotenv from "dotenv";
+import log from "../logger";
 
 const router = Router();
 
@@ -36,7 +37,12 @@ router.post("/check-staff", async (req, res) => {
             res.status(404).json({ error: "Unfortunately, this user doesn't seem to be part of the staff team." });
         }
     } catch (error) {
-        console.error("Error fetching staff member:", error);
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching staff member:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
         res.status(500).json({ error: "A little hiccup has occurred; please try again later." });
     }
 });
