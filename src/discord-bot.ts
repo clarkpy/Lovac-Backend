@@ -38,6 +38,13 @@ const commands = [
         option.setName('user')
     .setDescription('The user to blacklist')
     .setRequired(true)),
+
+    new SlashCommandBuilder()
+    .setName('insight')
+    .setDescription('Deep dive into a user')
+    .addUserOption(option => option.setName('user')
+    .setDescription('The user to get insight on')
+    .setRequired(true)),
 ];
 
 const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_BOT_TOKEN || '');

@@ -47,6 +47,12 @@ const commands = [
         .addUserOption(option => option.setName('user')
         .setDescription('The user to blacklist')
         .setRequired(true)),
+    new discord_js_1.SlashCommandBuilder()
+        .setName('insight')
+        .setDescription('Deep dive into a user')
+        .addUserOption(option => option.setName('user')
+        .setDescription('The user to get insight on')
+        .setRequired(true)),
 ];
 const rest = new discord_js_1.REST({ version: '9' }).setToken(process.env.DISCORD_BOT_TOKEN || '');
 exports.bot.login(process.env.DISCORD_BOT_TOKEN).then(() => {
