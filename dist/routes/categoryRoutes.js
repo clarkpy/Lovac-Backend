@@ -1,9 +1,20 @@
-import { Router } from "express";
-import { AppDataSource } from "../data-source";
-import { Category } from "../models/Category";
-const router = Router();
-router.get("/", async (req, res) => {
-    const categories = await AppDataSource.manager.find(Category);
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const data_source_1 = require("../data-source");
+const Category_1 = require("../models/Category");
+const router = (0, express_1.Router)();
+router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const categories = yield data_source_1.AppDataSource.manager.find(Category_1.Category);
     res.json(categories);
-});
-export default router;
+}));
+exports.default = router;

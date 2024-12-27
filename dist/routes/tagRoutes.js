@@ -1,29 +1,43 @@
-import { Router } from "express";
-import { AppDataSource } from "../data-source";
-import { Tag } from "../models/Tag";
-import { Ticket } from "../models/Ticket";
-import dotenv from "dotenv";
-import log from "../logger";
-dotenv.config();
-const router = Router();
-router.get("/tags", async (req, res) => {
-    const tags = await AppDataSource.manager.find(Tag);
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const data_source_1 = require("../data-source");
+const Tag_1 = require("../models/Tag");
+const Ticket_1 = require("../models/Ticket");
+const dotenv_1 = __importDefault(require("dotenv"));
+const logger_1 = __importDefault(require("../logger"));
+dotenv_1.default.config();
+const router = (0, express_1.Router)();
+router.get("/tags", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const tags = yield data_source_1.AppDataSource.manager.find(Tag_1.Tag);
     res.json(tags);
-});
-router.post("/apply-tag", async (req, res) => {
+}));
+router.post("/apply-tag", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { tagId, ticketId } = req.body;
     if (!tagId || !ticketId) {
         res.status(400).json({ error: "It seems some details are missing from your request, like a cat searching for its favorite toy." });
         return;
     }
-    const tag = await AppDataSource.manager.findOne(Tag, {
+    const tag = yield data_source_1.AppDataSource.manager.findOne(Tag_1.Tag, {
         where: { id: Number(tagId) },
     });
     if (!tag) {
         res.status(404).json({ error: "This tag seems to have slipped away, just like a curious cat!" });
         return;
     }
-    const ticket = await AppDataSource.manager.findOne(Ticket, {
+    const ticket = yield data_source_1.AppDataSource.manager.findOne(Ticket_1.Ticket, {
         where: { id: Number(ticketId) },
     });
     if (!ticket) {
@@ -33,23 +47,23 @@ router.post("/apply-tag", async (req, res) => {
     if (!ticket.tags.includes(tag.id.toString())) {
         ticket.tags.push(tag.id.toString());
     }
-    await AppDataSource.manager.save(ticket);
+    yield data_source_1.AppDataSource.manager.save(ticket);
     res.json({ success: true, ticket, tagColor: tag.tagColor, tagIcon: tag.tagIcon });
-});
-router.post("/remove-tag", async (req, res) => {
+}));
+router.post("/remove-tag", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { tagId, ticketId } = req.body;
     if (!tagId || !ticketId) {
         res.status(400).json({ error: "It seems some details are missing from your request, like a cat searching for its favorite toy." });
         return;
     }
-    const tag = await AppDataSource.manager.findOne(Tag, {
+    const tag = yield data_source_1.AppDataSource.manager.findOne(Tag_1.Tag, {
         where: { id: Number(tagId) },
     });
     if (!tag) {
         res.status(404).json({ error: "This tag seems to have slipped away, just like a curious cat!" });
         return;
     }
-    const ticket = await AppDataSource.manager.findOne(Ticket, {
+    const ticket = yield data_source_1.AppDataSource.manager.findOne(Ticket_1.Ticket, {
         where: { id: Number(ticketId) },
     });
     if (!ticket) {
@@ -59,32 +73,32 @@ router.post("/remove-tag", async (req, res) => {
     if (ticket.tags.includes(tag.id.toString())) {
         ticket.tags = ticket.tags.filter((id) => id !== tag.id.toString());
     }
-    await AppDataSource.manager.save(ticket);
+    yield data_source_1.AppDataSource.manager.save(ticket);
     res.json({ success: true, ticket, tagColor: tag.tagColor, tagIcon: tag.tagIcon });
-});
-router.post("/create-tag", async (req, res) => {
+}));
+router.post("/create-tag", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { tagShort, tagLong, tagColor, tagIcon } = req.body;
     if (!tagShort || !tagLong || !tagColor || !tagIcon) {
         res.status(400).json({ error: "It seems some details are missing from your request, like a cat searching for its favorite toy." });
         return;
     }
-    const newTag = new Tag();
+    const newTag = new Tag_1.Tag();
     newTag.tagShort = tagShort;
     newTag.tagLong = tagLong;
     newTag.tagColor = tagColor;
     newTag.tagIcon = tagIcon;
     try {
-        const savedTag = await AppDataSource.manager.save(newTag);
+        const savedTag = yield data_source_1.AppDataSource.manager.save(newTag);
         res.status(201).json({ success: true, tag: savedTag });
     }
     catch (error) {
-        log('=================================================================================================', 'error');
-        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
-        log('', 'error');
-        log("Error saving tag:", "error");
-        log(`${error}`, "error");
-        log('=================================================================================================', 'error');
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error saving tag:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
         res.status(500).json({ error: "A little hiccup has occurred; please try again later." });
     }
-});
-export default router;
+}));
+exports.default = router;

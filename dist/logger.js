@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const colors = {
     reset: "\x1b[0m",
     error: {
@@ -21,4 +23,4 @@ const log = (message, type) => {
     const color = colors[type];
     console.log(`${color.prefix} ${type.toUpperCase()} ${colors.reset} ${color.message}${message}${colors.reset}`);
 };
-export default log;
+exports.default = log;
