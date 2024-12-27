@@ -9,7 +9,7 @@ dotenv.config();
 
 const router = Router();
 
-router.get("/", async (req: Request, res: Response) => {
+router.get("/tickets", async (req: Request, res: Response) => {
     const tickets = await AppDataSource.manager.find(Ticket, { relations: ["messages"] });
     res.json(tickets);
 });
@@ -21,7 +21,7 @@ const getTicketById = async (ticketId: number): Promise<Ticket | null> => {
     });
 };
 
-router.get("/:id", async (req: Request, res: Response) => {
+router.get("/tickets/:id", async (req: Request, res: Response) => {
     try {
         const ticketId = parseInt(req.params.id);
         if (isNaN(ticketId)) {
@@ -46,7 +46,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     }
 });
 
-router.get("/all", async (req: Request, res: Response) => {
+router.get("/ticketdata/all", async (req: Request, res: Response) => {
     try {
         const allTickets = await AppDataSource.manager.find(Ticket);
         res.json(allTickets);
@@ -61,7 +61,7 @@ router.get("/all", async (req: Request, res: Response) => {
     }
 });
 
-router.post("/open", async (req: Request, res: Response) => {
+router.get("/ticketdata/open", async (req: Request, res: Response) => {
     try {
         const openTickets = await AppDataSource.manager.find(Ticket, {
             where: { status: "Open" },
@@ -80,7 +80,7 @@ router.post("/open", async (req: Request, res: Response) => {
     }
 });
 
-router.post("/closed", async (req: Request, res: Response) => {
+router.get("/ticketdata/closed", async (req: Request, res: Response) => {
     try {
         const closedTickets = await AppDataSource.manager.find(Ticket, {
             where: { status: "Closed" },
@@ -99,7 +99,7 @@ router.post("/closed", async (req: Request, res: Response) => {
     }
 });
 
-router.post("/unassigned", async (req: Request, res: Response) => {
+router.get("/ticketdata/unassigned", async (req: Request, res: Response) => {
     try {
         const unassignedTickets = await AppDataSource.manager.find(Ticket, {
             where: { assignee: IsNull() },
@@ -118,7 +118,7 @@ router.post("/unassigned", async (req: Request, res: Response) => {
     }
 });
 
-router.post("/assigned", async (req: Request, res: Response) => {
+router.post("/ticketdata/assigned", async (req: Request, res: Response) => {
     try {
         const { staffId } = req.body;
         if (!staffId) {
