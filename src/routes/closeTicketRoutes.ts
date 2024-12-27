@@ -5,6 +5,7 @@ import { TextChannel, ButtonBuilder, ButtonStyle, EmbedBuilder, ActionRowBuilder
 import { bot } from "../discord-bot";
 import axios from "axios";
 import dotenv from "dotenv";
+import log from "../logger";
 
 dotenv.config();
 
@@ -73,7 +74,12 @@ router.post(
 
       res.status(200).json({ message: "Close request sent successfully. Warmest wishes from the team!" });
     } catch (error) {
-      console.error("Error sending close request:", error);
+      log('=================================================================================================', 'error');
+      log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+      log('', 'error');
+      log("Error sending close request:", "error");
+      log(`${error}`, "error");
+      log('=================================================================================================', 'error');
       res.status(500).json({ error: "Oh no! A flurry of problems has caused a cat-astrophe in our cozy corner!" });
     }
   }
@@ -145,7 +151,12 @@ router.post(
 
       res.status(200).json({ message: "Ticket forcefully closed successfully. Warmest wishes from the team!" });
     } catch (error) {
-      console.error("Error force closing ticket:", error);
+      log('=================================================================================================', 'error');
+      log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+      log('', 'error');
+      log("Error closing ticket:", "error");
+      log(`${error}`, "error");
+      log('=================================================================================================', 'error');
       res.status(500).json({ error: "Oh no! A flurry of problems has caused a cat-astrophe in our cozy corner!" });
     }
   }

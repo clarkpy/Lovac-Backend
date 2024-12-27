@@ -19,6 +19,7 @@ const discord_js_1 = require("discord.js");
 const discord_bot_1 = require("../discord-bot");
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const logger_1 = __importDefault(require("../logger"));
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 router.post("/close-ticket", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -65,7 +66,12 @@ router.post("/close-ticket", (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.status(200).json({ message: "Close request sent successfully. Warmest wishes from the team!" });
     }
     catch (error) {
-        console.error("Error sending close request:", error);
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error sending close request:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
         res.status(500).json({ error: "Oh no! A flurry of problems has caused a cat-astrophe in our cozy corner!" });
     }
 }));
@@ -119,7 +125,12 @@ router.post("/force-close-ticket", (req, res) => __awaiter(void 0, void 0, void 
         res.status(200).json({ message: "Ticket forcefully closed successfully. Warmest wishes from the team!" });
     }
     catch (error) {
-        console.error("Error force closing ticket:", error);
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error closing ticket:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
         res.status(500).json({ error: "Oh no! A flurry of problems has caused a cat-astrophe in our cozy corner!" });
     }
 }));
