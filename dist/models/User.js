@@ -15,7 +15,7 @@ let User = class User {
 };
 exports.User = User;
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", String)
 ], User.prototype, "discordId", void 0);
 __decorate([

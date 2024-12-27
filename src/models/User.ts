@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from "ty
 
 @Entity()
 export class User {
-    @Column()
+    @PrimaryGeneratedColumn()
     discordId!: string;
 
     @Column()
