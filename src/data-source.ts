@@ -5,10 +5,11 @@ import { Tag } from "./models/Tag";
 import { Staff } from "./models/Staff";
 import { Category } from "./models/Category";
 import { Team } from "./models/Team";
+import { User } from "./models/User";
 
 export const AppDataSource = new DataSource({
     type: "sqlite",
     database: "./db.sqlite",
     synchronize: true,
-    entities: [Ticket, Message, Tag, Staff, Category, Team],
+    entities: [Ticket, Message, Tag, Staff, Category, Team, User],
 });
