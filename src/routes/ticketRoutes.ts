@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Ticket } from "../models/Ticket";
 import dotenv from 'dotenv';
+import log from "../logger";
 dotenv.config();
 
 const router = Router();
@@ -33,7 +34,12 @@ router.get("/:id", async (req: Request, res: Response) => {
             res.status(404).json({ error: "Regrettably, the requested ticket could not be found." });
         }
     } catch (error) {
-        console.error("Error fetching ticket by ID:", error);
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching ticket:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 });
@@ -47,7 +53,12 @@ router.get("/open", async (req: Request, res: Response) => {
         const openTicketIds = openTickets.map(ticket => ticket.id);
         res.json(openTicketIds);
     } catch (error) {
-        console.error("Error fetching open tickets:", error);
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching open tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 });

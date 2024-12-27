@@ -16,6 +16,7 @@ const express_1 = require("express");
 const data_source_1 = require("../data-source");
 const Ticket_1 = require("../models/Ticket");
 const dotenv_1 = __importDefault(require("dotenv"));
+const logger_1 = __importDefault(require("../logger"));
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -44,7 +45,12 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
     }
     catch (error) {
-        console.error("Error fetching ticket by ID:", error);
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error fetching ticket:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
@@ -58,7 +64,12 @@ router.get("/open", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.json(openTicketIds);
     }
     catch (error) {
-        console.error("Error fetching open tickets:", error);
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error fetching open tickets:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
