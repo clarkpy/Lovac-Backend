@@ -96,7 +96,7 @@ router.get('/unassignedtickets', async (req, res) => {
     }
 });
 
-router.get('/assignedtickets', async (req, res) => {
+router.post('/assignedtickets', async (req, res) => {
     const { staffId } = req.body;
     if (!staffId) {
         res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
