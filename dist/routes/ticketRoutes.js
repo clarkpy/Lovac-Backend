@@ -20,7 +20,7 @@ const logger_1 = __importDefault(require("../logger"));
 const typeorm_1 = require("typeorm");
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
-router.get('/tickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/alltickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { type } = req.query;
     try {
         let tickets;
@@ -50,6 +50,83 @@ router.get('/tickets', (req, res) => __awaiter(void 0, void 0, void 0, function*
         (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
         (0, logger_1.default)('', 'error');
         (0, logger_1.default)("Error fetching tickets:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+}));
+router.get('/opentickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const openTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
+            where: { status: "Open" },
+            relations: ["messages"],
+        });
+        res.json(openTickets);
+    }
+    catch (error) {
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error fetching open tickets:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+}));
+router.get('/closedtickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const closedTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
+            where: { status: "Closed" },
+            relations: ["messages"],
+        });
+        res.json(closedTickets);
+    }
+    catch (error) {
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error fetching closed tickets:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+}));
+router.get('/unassignedtickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const unassignedTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
+            where: { assignee: (0, typeorm_1.IsNull)() },
+            relations: ["messages"],
+        });
+        res.json(unassignedTickets);
+    }
+    catch (error) {
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error fetching unassigned tickets:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+}));
+router.post('/assignedtickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { staffId } = req.body;
+    if (!staffId) {
+        res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
+        return;
+    }
+    try {
+        const assignedToTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
+            where: { assignee: staffId },
+            relations: ["messages"],
+        });
+        res.json(assignedToTickets);
+    }
+    catch (error) {
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error fetching assigned to tickets:", "error");
         (0, logger_1.default)(`${error}`, "error");
         (0, logger_1.default)('=================================================================================================', 'error');
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
