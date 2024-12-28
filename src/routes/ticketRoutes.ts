@@ -9,7 +9,7 @@ dotenv.config();
 
 const router = Router();
 
-router.get('/tickets', async (req, res) => {
+router.get('/alltickets', async (req, res) => {
     const { type } = req.query;
     try {
         let tickets;
@@ -36,6 +36,83 @@ router.get('/tickets', async (req, res) => {
         log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
         log('', 'error');
         log("Error fetching tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+});
+
+router.get('/opentickets', async (req, res) => {
+    try {
+        const openTickets = await AppDataSource.manager.find(Ticket, {
+            where: { status: "Open" },
+            relations: ["messages"],
+        });
+        res.json(openTickets);
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching open tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+});
+
+router.get('/closedtickets', async (req, res) => {
+    try {
+        const closedTickets = await AppDataSource.manager.find(Ticket, {
+            where: { status: "Closed" },
+            relations: ["messages"],
+        });
+        res.json(closedTickets);
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching closed tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+});
+
+router.get('/unassignedtickets', async (req, res) => {
+    try {
+        const unassignedTickets = await AppDataSource.manager.find(Ticket, {
+            where: { assignee: IsNull() },
+            relations: ["messages"],
+        });
+        res.json(unassignedTickets);
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching unassigned tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+});
+
+router.get('/assignedtickets', async (req, res) => {
+    const { staffId } = req.body;
+    if (!staffId) {
+        res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
+        return;
+    }
+    try {
+        const assignedToTickets = await AppDataSource.manager.find(Ticket, {
+            where: { assignee: staffId },
+            relations: ["messages"],
+        });
+        res.json(assignedToTickets);
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching assigned to tickets:", "error");
         log(`${error}`, "error");
         log('=================================================================================================', 'error');
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
