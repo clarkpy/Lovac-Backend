@@ -3,15 +3,43 @@ import { AppDataSource } from "../data-source";
 import { Ticket } from "../models/Ticket";
 import dotenv from 'dotenv';
 import log from "../logger";
-import { IsNull } from "typeorm";
+import { IsNull, In } from "typeorm";
 
 dotenv.config();
 
 const router = Router();
 
-router.get("/tickets", async (req: Request, res: Response) => {
-    const tickets = await AppDataSource.manager.find(Ticket, { relations: ["messages"] });
-    res.json(tickets);
+router.get('/tickets', async (req, res) => {
+    const { type } = req.query;
+    try {
+        let tickets;
+        if (type === 'open') {
+            const openTicketIds = await AppDataSource.manager.find(Ticket, {
+                where: { status: "Open" },
+                select: ["id"],
+            });
+            tickets = await AppDataSource.manager.find(Ticket, {
+                where: { id: In(openTicketIds.map(ticket => ticket.id)) },
+                relations: ["messages"],
+            });
+        } else if (type === 'closed') {
+            tickets = await AppDataSource.manager.find(Ticket, {
+                where: { status: "Closed" },
+                relations: ["messages"],
+            });
+        } else {
+            tickets = await AppDataSource.manager.find(Ticket, { relations: ["messages"] });
+        }
+        res.json(tickets);
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching tickets:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
 });
 
 const getTicketById = async (ticketId: number): Promise<Ticket | null> => {
