@@ -26,7 +26,7 @@ const userInsight = (interaction) => __awaiter(void 0, void 0, void 0, function*
         .setTitle('User Insight')
         .setDescription('🔍 Processing user insight request...')
         .addFields({ name: 'Status', value: '⚙️ Querying database...' });
-    const reply = yield interaction.reply({ embeds: [embed], ephemeral: true, fetchReply: true });
+    const reply = yield interaction.reply({ embeds: [embed], ephemeral: false, fetchReply: true });
     if (!userId) {
         console.log('[UserInsight] Error: No user ID provided');
         embed.setDescription('❌ Error')
