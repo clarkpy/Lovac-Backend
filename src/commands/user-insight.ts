@@ -9,18 +9,18 @@ import { bot } from "../discord-bot";
 
 export const userInsight = async (interaction: CommandInteraction) => {
     const userId = interaction.options.get('user')?.value?.toString();
-    console.log(`[UserInsight] Requested insight for user ID: ${userId}`);
 
     const embed = new EmbedBuilder()
         .setColor('#2b2d31')
         .setTitle('User Insight')
         .setDescription('🔍 Processing user insight request...')
-        .addFields({ name: 'Status', value: '⚙️ Querying database...' });
+        .addFields({ name: 'Status', value: '⚙️ Querying database...' })
+        .setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
+        .setThumbnail(interaction.client.users.cache.get(userId || '')?.displayAvatarURL() || '');
 
     const reply = await interaction.reply({ embeds: [embed], ephemeral: false, fetchReply: true });
 
     if (!userId) {
-        console.log('[UserInsight] Error: No user ID provided');
         embed.setDescription('❌ Error')
             .setFields({ name: 'Status', value: 'Please provide a user to lookup.' })
             .setColor('#ff0000');
@@ -30,10 +30,8 @@ export const userInsight = async (interaction: CommandInteraction) => {
 
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({ where: { discordId: userId } });
-    console.log(`[UserInsight] User data found:`, user);
 
     if (!user) {
-        console.log('[UserInsight] Error: User not found in database');
         embed.setDescription('❌ Error')
             .setFields({ name: 'Status', value: 'User not found in the database. This means they have not created any tickets.' })
             .setColor('#ff0000');
@@ -45,11 +43,9 @@ export const userInsight = async (interaction: CommandInteraction) => {
     await interaction.editReply({ embeds: [embed] });
 
     const { openTickets, totalTickets, isBlacklisted } = user;
-    console.log(`[UserInsight] User stats - Open: ${openTickets}, Total: ${totalTickets}, Blacklisted: ${isBlacklisted}`);
 
     let staffValue = false;
     const isStaff = interaction.guild?.members.cache.get(userId)?.roles.cache.has('721017166652244018');
-    console.log(`[UserInsight] Staff role check:`, isStaff);
 
     if (isStaff) {
         try {
@@ -62,7 +58,6 @@ export const userInsight = async (interaction: CommandInteraction) => {
             });
 
             const isStaffResponse = await response.json();
-            console.log(`[UserInsight] Staff API response:`, isStaffResponse);
             staffValue = isStaffResponse.isStaff;
         } catch (error) {
             console.error('[UserInsight] Error checking staff status:', error);
@@ -83,9 +78,10 @@ export const userInsight = async (interaction: CommandInteraction) => {
             { name: `${statusEmojis.blacklisted} Status`, value: `Blacklisted: ${isBlacklisted ? 'Yes' : 'No'}`, inline: true },
             { name: `${statusEmojis.staff} Role`, value: staffValue ? 'Staff Member' : 'Regular User', inline: true }
         ])
+        .setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
+        .setThumbnail(interaction.client.users.cache.get(userId || '')?.displayAvatarURL() || '')
         .setFooter({ text: 'Lovac', iconURL: bot.user?.displayAvatarURL() })
         .setTimestamp();
 
-    console.log('[UserInsight] Sending final response');
     await interaction.editReply({ embeds: [embed] });
 };
