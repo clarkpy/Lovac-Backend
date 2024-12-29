@@ -244,18 +244,16 @@ bot.on("interactionCreate", async (interaction) => {
                 if (user) {
 
                     if (user.isBlacklisted) {
-                        await interaction.reply({ content: 'You are currently blacklisted from creating tickets.', ephemeral: true });
-                        return;
+                        return interaction.reply({ content: 'You are currently blacklisted from creating tickets.', ephemeral: true });
                     }
 
                     if (user.openTickets >= 3) {
-                        await interaction.reply({ content: 'You have reached the maximum number of open tickets.', ephemeral: true });
-                        return;
+                        return interaction.reply({ content: 'You have reached the maximum number of open tickets.', ephemeral: true });
+                        
                     }
 
                     if (user.totalTickets >= 50) {
-                        await interaction.reply({ content: 'You have reached the maximum number of total tickets. Please contact <@721017166652244018>', ephemeral: true });
-                        return;
+                        return interaction.reply({ content: 'You have reached the maximum number of total tickets. Please contact <@721017166652244018>', ephemeral: true });
                     }
 
                     user.totalTickets += 1;
