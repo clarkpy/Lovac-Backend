@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blacklistUser = void 0;
+const discord_js_1 = require("discord.js");
 const data_source_1 = require("../data-source");
 const User_1 = require("../models/User");
 const blacklistUser = (interaction) => __awaiter(void 0, void 0, void 0, function* () {
@@ -23,21 +24,37 @@ const blacklistUser = (interaction) => __awaiter(void 0, void 0, void 0, functio
         yield interaction.reply({ content: 'You cannot blacklist yourself.', ephemeral: true });
         return;
     }
+    const embed = new discord_js_1.EmbedBuilder()
+        .setColor('#2b2d31')
+        .setTitle('User Blacklist')
+        .setDescription('Processing blacklist request...')
+        .addFields({ name: 'Status', value: '⚙️ Querying database...' });
+    const reply = yield interaction.reply({ embeds: [embed], ephemeral: true, fetchReply: true });
     const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
     const existingUser = yield userRepository.findOne({ where: { discordId: userId } });
     if (!existingUser) {
-        yield interaction.reply({ content: 'User not found in the database.', ephemeral: true });
+        embed.setDescription('❌ Error')
+            .setFields({ name: 'Status', value: 'User not found in the database.' })
+            .setColor('#ff0000');
+        yield interaction.editReply({ embeds: [embed] });
         return;
     }
+    embed.setFields({ name: 'Status', value: '⚙️ Updating user status...' });
+    yield interaction.editReply({ embeds: [embed] });
     if (existingUser.isBlacklisted) {
         existingUser.isBlacklisted = false;
-        yield interaction.reply({ content: 'Removing user from blacklist.   ', ephemeral: true });
+        yield userRepository.save(existingUser);
+        embed.setDescription('✅ Success')
+            .setFields({ name: 'Status', value: '🔓 User has been removed from blacklist.' })
+            .setColor('#00ff00');
     }
     else {
         existingUser.isBlacklisted = true;
-        yield interaction.reply({ content: 'Adding user to blacklist.   ', ephemeral: true });
+        yield userRepository.save(existingUser);
+        embed.setDescription('✅ Success')
+            .setFields({ name: 'Status', value: '🔒 User has been added to blacklist.' })
+            .setColor('#00ff00');
     }
-    yield userRepository.save(existingUser);
-    return;
+    yield interaction.editReply({ embeds: [embed] });
 });
 exports.blacklistUser = blacklistUser;
