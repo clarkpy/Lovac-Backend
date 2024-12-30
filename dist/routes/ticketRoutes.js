@@ -18,6 +18,7 @@ const Ticket_1 = require("../models/Ticket");
 const mongodb_1 = require("mongodb");
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("../logger"));
+const sequence_1 = require("../utils/sequence");
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 router.get('/alltickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -216,6 +217,38 @@ router.post("/ticketdata/assigned", (req, res) => __awaiter(void 0, void 0, void
         (0, logger_1.default)(`${error}`, "error");
         (0, logger_1.default)('=================================================================================================', 'error');
         res.status(500).json({ message: "A little hiccup has occurred; please try again later.", error });
+    }
+}));
+router.post('/create-ticket', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { ownerId, assignee, tags, status, categories, threadId } = req.body;
+    if (!ownerId || !status || !threadId) {
+        res.status(400).json({ error: "Meow, it looks like some details are missing from your request!" });
+        return;
+    }
+    try {
+        const ticketNumber = yield (0, sequence_1.getNextSequenceValue)("ticketNumber");
+        const newTicket = new Ticket_1.Ticket();
+        newTicket.id = ticketNumber;
+        newTicket.ownerId = ownerId;
+        newTicket.assignee = assignee || null;
+        newTicket.tags = tags || [];
+        newTicket.status = status;
+        newTicket.categories = categories || [];
+        newTicket.dateOpened = new Date();
+        newTicket.dateClosed = null;
+        newTicket.threadId = threadId;
+        newTicket.messages = [];
+        yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).save(newTicket);
+        res.status(200).json({ message: "Ticket created successfully.", ticket: newTicket });
+    }
+    catch (error) {
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error creating ticket:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
 exports.default = router;

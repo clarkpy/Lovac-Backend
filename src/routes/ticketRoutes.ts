@@ -4,10 +4,13 @@ import { Ticket } from "../models/Ticket";
 import { ObjectId } from "mongodb";
 import dotenv from 'dotenv';
 import log from "../logger";
+import { getNextSequenceValue } from "../utils/sequence";
 
 dotenv.config();
 
 const router = Router();
+
+
 
 router.get('/alltickets', async (req, res) => {
     const { type } = req.query;
@@ -203,6 +206,43 @@ router.post("/ticketdata/assigned", async (req: Request, res: Response) => {
         log(`${error}`, "error");
         log('=================================================================================================', 'error');
         res.status(500).json({ message: "A little hiccup has occurred; please try again later.", error });
+    }
+});
+
+router.post('/create-ticket', async (req: Request, res: Response) => {
+    const { ownerId, assignee, tags, status, categories, threadId } = req.body;
+
+    if (!ownerId || !status || !threadId) {
+        res.status(400).json({ error: "Meow, it looks like some details are missing from your request!" });
+        return;
+    }
+
+    try {
+        const ticketNumber = await getNextSequenceValue("ticketNumber");
+
+        const newTicket = new Ticket();
+        newTicket.id = ticketNumber;
+        newTicket.ownerId = ownerId;
+        newTicket.assignee = assignee || null;
+        newTicket.tags = tags || [];
+        newTicket.status = status;
+        newTicket.categories = categories || [];
+        newTicket.dateOpened = new Date();
+        newTicket.dateClosed = null;
+        newTicket.threadId = threadId;
+        newTicket.messages = [];
+
+        await AppDataSource.getMongoRepository(Ticket).save(newTicket);
+
+        res.status(200).json({ message: "Ticket created successfully.", ticket: newTicket });
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error creating ticket:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 });
 
