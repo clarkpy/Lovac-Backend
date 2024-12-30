@@ -1,10 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { Entity, ObjectIdColumn, ObjectId, Column, ManyToOne } from "typeorm";
 import { Ticket } from "./Ticket";
 
 @Entity()
 export class Message {
-    @PrimaryGeneratedColumn()
-    id!: number;
+    @ObjectIdColumn()
+    id!: ObjectId;
 
     @Column()
     author!: string;
