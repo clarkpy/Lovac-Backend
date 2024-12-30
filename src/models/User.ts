@@ -1,8 +1,11 @@
-import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne } from "typeorm";
+import { Entity, ObjectIdColumn, ObjectId, Column } from "typeorm";
 
 @Entity()
 export class User {
-    @PrimaryColumn()
+    @ObjectIdColumn()
+    id!: ObjectId;
+
+    @Column()
     discordId!: string;
 
     @Column()
