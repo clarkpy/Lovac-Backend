@@ -16,8 +16,8 @@ let Category = class Category {
 };
 exports.Category = Category;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
+    (0, typeorm_1.ObjectIdColumn)(),
+    __metadata("design:type", typeorm_1.ObjectId)
 ], Category.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),

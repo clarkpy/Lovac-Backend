@@ -1,10 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Entity, ObjectIdColumn, ObjectId, Column, OneToMany } from "typeorm";
 import { Ticket } from "./Ticket";
 
 @Entity()
 export class Category {
-    @PrimaryGeneratedColumn()
-    id!: number;
+    @ObjectIdColumn()
+    id!: ObjectId;
 
     @Column()
     name!: string;
