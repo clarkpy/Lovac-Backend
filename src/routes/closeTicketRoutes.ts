@@ -43,7 +43,7 @@ router.post(
       }
 
       const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
-        where: { _id: new ObjectId(ticketId) },
+        where: { id: ticketId },
       });
 
       if (!ticket) {
@@ -116,8 +116,8 @@ router.post(
         return;
       }
 
-      const ticket = await AppDataSource.manager.findOne(Ticket, {
-        where: { id: new ObjectId(ticketId) },
+      const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
+        where: { _id: new ObjectId(ticketId) },
       });
 
       if (!ticket) {

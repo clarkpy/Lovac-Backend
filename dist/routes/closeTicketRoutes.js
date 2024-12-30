@@ -43,7 +43,7 @@ router.post("/close-ticket", (req, res) => __awaiter(void 0, void 0, void 0, fun
             return;
         }
         const ticket = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({
-            where: { _id: new mongodb_1.ObjectId(ticketId) },
+            where: { id: ticketId },
         });
         if (!ticket) {
             res.status(404).json({ error: "Purr-haps this ticket has been swept away by the snowy winds?" });
@@ -95,8 +95,8 @@ router.post("/force-close-ticket", (req, res) => __awaiter(void 0, void 0, void 
             res.status(500).json({ error: "Oh no! A flurry of problems has caused a cat-astrophe in our cozy corner!" });
             return;
         }
-        const ticket = yield data_source_1.AppDataSource.manager.findOne(Ticket_1.Ticket, {
-            where: { id: new mongodb_1.ObjectId(ticketId) },
+        const ticket = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({
+            where: { _id: new mongodb_1.ObjectId(ticketId) },
         });
         if (!ticket) {
             res.status(404).json({ error: "Purr-haps this ticket has been swept away by the snowy winds?" });
