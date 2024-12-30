@@ -1,19 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, ObjectIdColumn, ObjectId, Column } from "typeorm";
 
 @Entity()
 export class Tag {
-    @PrimaryGeneratedColumn()
-    id!: number;
+    @ObjectIdColumn()
+    id!: ObjectId;
 
     @Column()
-    tagShort!: string; // [Example] "Dev App"
+    tagShort!: string;
 
     @Column()
-    tagLong!: string; // [Example] "Developer Application"
+    tagLong!: string;
 
     @Column()
-    tagColor!: string; // [Example] "#FF0000"
+    tagColor!: string;
 
     @Column()
-    tagIcon!: string; // [Example] "🛠️"
+    tagIcon!: string;
 }

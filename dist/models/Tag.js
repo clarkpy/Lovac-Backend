@@ -15,8 +15,8 @@ let Tag = class Tag {
 };
 exports.Tag = Tag;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
+    (0, typeorm_1.ObjectIdColumn)(),
+    __metadata("design:type", typeorm_1.ObjectId)
 ], Tag.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
