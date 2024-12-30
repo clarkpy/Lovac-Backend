@@ -17,7 +17,7 @@ let Ticket = class Ticket {
 };
 exports.Ticket = Ticket;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    (0, typeorm_1.Column)({ type: "int", unique: true }),
     __metadata("design:type", Number)
 ], Ticket.prototype, "id", void 0);
 __decorate([
