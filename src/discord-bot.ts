@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, ChannelType, ActivityType, TextChannel, Thre
 import { Ticket } from "./models/Ticket";
 import { Message as TicketMessage } from "./models/Message";
 import { AppDataSource } from "./data-source";
+import { ObjectId } from "mongodb";
 import { Team } from "./models/Team";
 import { User } from "./models/User";
 import dotenv from "dotenv";
@@ -57,9 +58,9 @@ bot.login(process.env.DISCORD_BOT_TOKEN).then(() => {
     });
 });
 
-const ticketRepository = AppDataSource.getRepository(Ticket);
-const teamRepository = AppDataSource.getRepository(Team);
-const userRepository = AppDataSource.getRepository(User);
+const ticketRepository = AppDataSource.getMongoRepository(Ticket);
+const teamRepository = AppDataSource.getMongoRepository(Team);
+const userRepository = AppDataSource.getMongoRepository(User);
 
 (async () => {
     try {
@@ -184,7 +185,7 @@ bot.on("interactionCreate", async (interaction) => {
 
         if (action === "acceptClose") {
             const ticket = await ticketRepository.findOne({
-                where: { id: Number(ticketId) },
+                where: { id: new ObjectId(ticketId) },
             });
 
             const welcomeEmbed = new EmbedBuilder()
@@ -328,7 +329,7 @@ bot.on("interactionCreate", async (interaction) => {
             }
         } else if (action === "requestHigherUp") {
             const ticket = await ticketRepository.findOne({
-                where: { id: Number(ticketId) },
+                where: { id: new ObjectId(ticketId) },
                 relations: ["assignedGroup"]
             });
 

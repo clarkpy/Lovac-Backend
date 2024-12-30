@@ -16,6 +16,7 @@ exports.bot = void 0;
 const discord_js_1 = require("discord.js");
 const Ticket_1 = require("./models/Ticket");
 const data_source_1 = require("./data-source");
+const mongodb_1 = require("mongodb");
 const Team_1 = require("./models/Team");
 const User_1 = require("./models/User");
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -63,9 +64,9 @@ exports.bot.login(process.env.DISCORD_BOT_TOKEN).then(() => {
         status: 'online',
     });
 });
-const ticketRepository = data_source_1.AppDataSource.getRepository(Ticket_1.Ticket);
-const teamRepository = data_source_1.AppDataSource.getRepository(Team_1.Team);
-const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
+const ticketRepository = data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket);
+const teamRepository = data_source_1.AppDataSource.getMongoRepository(Team_1.Team);
+const userRepository = data_source_1.AppDataSource.getMongoRepository(User_1.User);
 (() => __awaiter(void 0, void 0, void 0, function* () {
     try {
         (0, logger_1.default)('> BOT: Attempting to update commands...', 'log');
@@ -172,7 +173,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
         const [action, ticketId] = interaction.customId.split("_");
         if (action === "acceptClose") {
             const ticket = yield ticketRepository.findOne({
-                where: { id: Number(ticketId) },
+                where: { id: new mongodb_1.ObjectId(ticketId) },
             });
             const welcomeEmbed = new discord_js_1.EmbedBuilder()
                 .setColor('#0099ff')
@@ -295,7 +296,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
         }
         else if (action === "requestHigherUp") {
             const ticket = yield ticketRepository.findOne({
-                where: { id: Number(ticketId) },
+                where: { id: new mongodb_1.ObjectId(ticketId) },
                 relations: ["assignedGroup"]
             });
             if (ticket) {
