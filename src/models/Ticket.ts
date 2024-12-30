@@ -1,11 +1,11 @@
-import { Entity, ObjectIdColumn, ObjectId, Column, OneToMany, ManyToOne } from "typeorm";
+import { Entity, Column, OneToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Message } from "./Message";
 import { Team } from "./Team";
 
 @Entity()
 export class Ticket {
-    @ObjectIdColumn()
-    id!: ObjectId;
+    @PrimaryGeneratedColumn()
+    id!: number;
 
     @Column({ type: "varchar", nullable: true })
     assignee!: string | null;
