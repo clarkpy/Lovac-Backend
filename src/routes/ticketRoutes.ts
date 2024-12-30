@@ -1,9 +1,9 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Ticket } from "../models/Ticket";
+import { ObjectId } from "mongodb";
 import dotenv from 'dotenv';
 import log from "../logger";
-import { IsNull, In } from "typeorm";
 
 dotenv.config();
 
@@ -14,21 +14,11 @@ router.get('/alltickets', async (req, res) => {
     try {
         let tickets;
         if (type === 'open') {
-            const openTicketIds = await AppDataSource.manager.find(Ticket, {
-                where: { status: "Open" },
-                select: ["id"],
-            });
-            tickets = await AppDataSource.manager.find(Ticket, {
-                where: { id: In(openTicketIds.map(ticket => ticket.id)) },
-                relations: ["messages"],
-            });
+            tickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { status: "Open" } });
         } else if (type === 'closed') {
-            tickets = await AppDataSource.manager.find(Ticket, {
-                where: { status: "Closed" },
-                relations: ["messages"],
-            });
+            tickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { status: "Closed" } });
         } else {
-            tickets = await AppDataSource.manager.find(Ticket, { relations: ["messages"] });
+            tickets = await AppDataSource.getMongoRepository(Ticket).find();
         }
         res.json(tickets);
     } catch (error) {
@@ -44,10 +34,7 @@ router.get('/alltickets', async (req, res) => {
 
 router.get('/opentickets', async (req, res) => {
     try {
-        const openTickets = await AppDataSource.manager.find(Ticket, {
-            where: { status: "Open" },
-            relations: ["messages"],
-        });
+        const openTickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { status: "Open" } });
         res.json(openTickets);
     } catch (error) {
         log('=================================================================================================', 'error');
@@ -62,10 +49,7 @@ router.get('/opentickets', async (req, res) => {
 
 router.get('/closedtickets', async (req, res) => {
     try {
-        const closedTickets = await AppDataSource.manager.find(Ticket, {
-            where: { status: "Closed" },
-            relations: ["messages"],
-        });
+        const closedTickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { status: "Closed" } });
         res.json(closedTickets);
     } catch (error) {
         log('=================================================================================================', 'error');
@@ -80,10 +64,7 @@ router.get('/closedtickets', async (req, res) => {
 
 router.get('/unassignedtickets', async (req, res) => {
     try {
-        const unassignedTickets = await AppDataSource.manager.find(Ticket, {
-            where: { assignee: IsNull() },
-            relations: ["messages"],
-        });
+        const unassignedTickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { assignee: null } });
         res.json(unassignedTickets);
     } catch (error) {
         log('=================================================================================================', 'error');
@@ -103,10 +84,7 @@ router.post('/assignedtickets', async (req, res) => {
         return;
     }
     try {
-        const assignedToTickets = await AppDataSource.manager.find(Ticket, {
-            where: { assignee: staffId },
-            relations: ["messages"],
-        });
+        const assignedToTickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { assignee: staffId } });
         res.json(assignedToTickets);
     } catch (error) {
         log('=================================================================================================', 'error');
@@ -119,20 +97,13 @@ router.post('/assignedtickets', async (req, res) => {
     }
 });
 
-const getTicketById = async (ticketId: number): Promise<Ticket | null> => {
-    return await AppDataSource.manager.findOne(Ticket, {
-        where: { id: ticketId },
-        relations: ["messages"],
-    });
+const getTicketById = async (ticketId: ObjectId): Promise<Ticket | null> => {
+    return await AppDataSource.getMongoRepository(Ticket).findOne({ where: { _id: ticketId } });
 };
 
 router.get("/tickets/:id", async (req: Request, res: Response) => {
     try {
-        const ticketId = parseInt(req.params.id);
-        if (isNaN(ticketId)) {
-            res.status(400).json({ error: "It appears that some details are missing from your request." });
-            return;
-        }
+        const ticketId = new ObjectId(req.params.id);
         const ticket = await getTicketById(ticketId);
 
         if (ticket) {
@@ -153,7 +124,7 @@ router.get("/tickets/:id", async (req: Request, res: Response) => {
 
 router.get("/ticketdata/all", async (req: Request, res: Response) => {
     try {
-        const allTickets = await AppDataSource.manager.find(Ticket);
+        const allTickets = await AppDataSource.getMongoRepository(Ticket).find();
         res.json(allTickets);
     } catch (error) {
         log('=================================================================================================', 'error');
@@ -168,10 +139,7 @@ router.get("/ticketdata/all", async (req: Request, res: Response) => {
 
 router.get("/ticketdata/open", async (req: Request, res: Response) => {
     try {
-        const openTickets = await AppDataSource.manager.find(Ticket, {
-            where: { status: "Open" },
-            select: ["id"],
-        });
+        const openTickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { status: "Open" } });
         const openTicketIds = openTickets.map(ticket => ticket.id);
         res.json(openTicketIds);
     } catch (error) {
@@ -187,10 +155,7 @@ router.get("/ticketdata/open", async (req: Request, res: Response) => {
 
 router.get("/ticketdata/closed", async (req: Request, res: Response) => {
     try {
-        const closedTickets = await AppDataSource.manager.find(Ticket, {
-            where: { status: "Closed" },
-            select: ["id"],
-        });
+        const closedTickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { status: "Closed" } });
         const closedTicketIds = closedTickets.map(ticket => ticket.id);
         res.json(closedTicketIds);
     } catch (error) {
@@ -206,10 +171,7 @@ router.get("/ticketdata/closed", async (req: Request, res: Response) => {
 
 router.get("/ticketdata/unassigned", async (req: Request, res: Response) => {
     try {
-        const unassignedTickets = await AppDataSource.manager.find(Ticket, {
-            where: { assignee: IsNull() },
-            select: ["id"],
-        });
+        const unassignedTickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { assignee: null } });
         const unassignedTicketIds = unassignedTickets.map(ticket => ticket.id);
         res.json(unassignedTicketIds);
     } catch (error) {
@@ -230,10 +192,7 @@ router.post("/ticketdata/assigned", async (req: Request, res: Response) => {
             res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const assignedTickets = await AppDataSource.manager.find(Ticket, {
-            where: { assignee: staffId },
-            select: ["id"],
-        });
+        const assignedTickets = await AppDataSource.getMongoRepository(Ticket).find({ where: { assignee: staffId } });
         const assignedTicketIds = assignedTickets.map(ticket => ticket.id);
         res.json(assignedTicketIds);
     } catch (error) {

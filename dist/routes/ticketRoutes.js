@@ -15,9 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const data_source_1 = require("../data-source");
 const Ticket_1 = require("../models/Ticket");
+const mongodb_1 = require("mongodb");
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("../logger"));
-const typeorm_1 = require("typeorm");
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 router.get('/alltickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -25,23 +25,13 @@ router.get('/alltickets', (req, res) => __awaiter(void 0, void 0, void 0, functi
     try {
         let tickets;
         if (type === 'open') {
-            const openTicketIds = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-                where: { status: "Open" },
-                select: ["id"],
-            });
-            tickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-                where: { id: (0, typeorm_1.In)(openTicketIds.map(ticket => ticket.id)) },
-                relations: ["messages"],
-            });
+            tickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { status: "Open" } });
         }
         else if (type === 'closed') {
-            tickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-                where: { status: "Closed" },
-                relations: ["messages"],
-            });
+            tickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { status: "Closed" } });
         }
         else {
-            tickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, { relations: ["messages"] });
+            tickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find();
         }
         res.json(tickets);
     }
@@ -57,10 +47,7 @@ router.get('/alltickets', (req, res) => __awaiter(void 0, void 0, void 0, functi
 }));
 router.get('/opentickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const openTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-            where: { status: "Open" },
-            relations: ["messages"],
-        });
+        const openTickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { status: "Open" } });
         res.json(openTickets);
     }
     catch (error) {
@@ -75,10 +62,7 @@ router.get('/opentickets', (req, res) => __awaiter(void 0, void 0, void 0, funct
 }));
 router.get('/closedtickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const closedTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-            where: { status: "Closed" },
-            relations: ["messages"],
-        });
+        const closedTickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { status: "Closed" } });
         res.json(closedTickets);
     }
     catch (error) {
@@ -93,10 +77,7 @@ router.get('/closedtickets', (req, res) => __awaiter(void 0, void 0, void 0, fun
 }));
 router.get('/unassignedtickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const unassignedTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-            where: { assignee: (0, typeorm_1.IsNull)() },
-            relations: ["messages"],
-        });
+        const unassignedTickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { assignee: null } });
         res.json(unassignedTickets);
     }
     catch (error) {
@@ -116,10 +97,7 @@ router.post('/assignedtickets', (req, res) => __awaiter(void 0, void 0, void 0, 
         return;
     }
     try {
-        const assignedToTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-            where: { assignee: staffId },
-            relations: ["messages"],
-        });
+        const assignedToTickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { assignee: staffId } });
         res.json(assignedToTickets);
     }
     catch (error) {
@@ -133,18 +111,11 @@ router.post('/assignedtickets', (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 }));
 const getTicketById = (ticketId) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield data_source_1.AppDataSource.manager.findOne(Ticket_1.Ticket, {
-        where: { id: ticketId },
-        relations: ["messages"],
-    });
+    return yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({ where: { _id: ticketId } });
 });
 router.get("/tickets/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const ticketId = parseInt(req.params.id);
-        if (isNaN(ticketId)) {
-            res.status(400).json({ error: "It appears that some details are missing from your request." });
-            return;
-        }
+        const ticketId = new mongodb_1.ObjectId(req.params.id);
         const ticket = yield getTicketById(ticketId);
         if (ticket) {
             res.json(ticket);
@@ -165,7 +136,7 @@ router.get("/tickets/:id", (req, res) => __awaiter(void 0, void 0, void 0, funct
 }));
 router.get("/ticketdata/all", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const allTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket);
+        const allTickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find();
         res.json(allTickets);
     }
     catch (error) {
@@ -180,10 +151,7 @@ router.get("/ticketdata/all", (req, res) => __awaiter(void 0, void 0, void 0, fu
 }));
 router.get("/ticketdata/open", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const openTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-            where: { status: "Open" },
-            select: ["id"],
-        });
+        const openTickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { status: "Open" } });
         const openTicketIds = openTickets.map(ticket => ticket.id);
         res.json(openTicketIds);
     }
@@ -199,10 +167,7 @@ router.get("/ticketdata/open", (req, res) => __awaiter(void 0, void 0, void 0, f
 }));
 router.get("/ticketdata/closed", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const closedTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-            where: { status: "Closed" },
-            select: ["id"],
-        });
+        const closedTickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { status: "Closed" } });
         const closedTicketIds = closedTickets.map(ticket => ticket.id);
         res.json(closedTicketIds);
     }
@@ -218,10 +183,7 @@ router.get("/ticketdata/closed", (req, res) => __awaiter(void 0, void 0, void 0,
 }));
 router.get("/ticketdata/unassigned", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const unassignedTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-            where: { assignee: (0, typeorm_1.IsNull)() },
-            select: ["id"],
-        });
+        const unassignedTickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { assignee: null } });
         const unassignedTicketIds = unassignedTickets.map(ticket => ticket.id);
         res.json(unassignedTicketIds);
     }
@@ -242,10 +204,7 @@ router.post("/ticketdata/assigned", (req, res) => __awaiter(void 0, void 0, void
             res.status(400).json({ message: "It seems some details are missing, like a cat looking for its favorite spot." });
             return;
         }
-        const assignedTickets = yield data_source_1.AppDataSource.manager.find(Ticket_1.Ticket, {
-            where: { assignee: staffId },
-            select: ["id"],
-        });
+        const assignedTickets = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).find({ where: { assignee: staffId } });
         const assignedTicketIds = assignedTickets.map(ticket => ticket.id);
         res.json(assignedTicketIds);
     }
