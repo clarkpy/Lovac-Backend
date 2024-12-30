@@ -87,7 +87,7 @@ router.post("/remove-tag", (req, res) => __awaiter(void 0, void 0, void 0, funct
         return;
     }
     const ticket = yield data_source_1.AppDataSource.manager.findOne(Ticket_1.Ticket, {
-        where: { id: new mongodb_1.ObjectId(ticketId) },
+        where: { id: ticketId },
     });
     if (!ticket) {
         res.status(404).json({ error: "This ticket appears to be hiding; we can't find it anywhere!" });

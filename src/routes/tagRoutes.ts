@@ -89,7 +89,7 @@ router.post("/remove-tag", async (req, res) => {
 
     
     const ticket = await AppDataSource.manager.findOne(Ticket, {
-        where: { id: new ObjectId(ticketId) },
+        where: { id: ticketId },
     });
 
     if (!ticket) {
