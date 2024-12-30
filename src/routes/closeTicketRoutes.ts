@@ -6,6 +6,7 @@ import { bot } from "../discord-bot";
 import axios from "axios";
 import dotenv from "dotenv";
 import log from "../logger";
+import { ObjectId } from "mongodb";
 
 dotenv.config();
 
@@ -14,20 +15,19 @@ const router = Router();
 router.post(
   "/close-ticket",
   async (
-    req: Request<{}, {}, { staffId: string; staffUsername: string; ticketId: string }>,
+    req: Request<{}, {}, { staffId: string; ticketId: string }>,
     res: Response
   ): Promise<void> => {
     try {
-      const { staffId, staffUsername, ticketId } = req.body;
+      const { staffId, ticketId } = req.body;
 
-      if (!staffId || !staffUsername || !ticketId) {
+      if (!staffId || !ticketId) {
         res.status(400).json({ error: "Meow, it looks like some details are missing from your request!" });
         return;
       }
 
       const staffCheckResponse = await axios.post(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
-        staffId: staffId,
-        discordUsername: staffUsername
+        staffId: staffId
       });
 
       if (staffCheckResponse.status !== 200) {
@@ -42,8 +42,8 @@ router.post(
         return;
       }
 
-      const ticket = await AppDataSource.manager.findOne(Ticket, {
-        where: { id: Number(ticketId) },
+      const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
+        where: { _id: new ObjectId(ticketId) },
       });
 
       if (!ticket) {
@@ -63,8 +63,8 @@ router.post(
         .setColor(0xff0000);
 
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder().setCustomId(`acceptClose_${ticketId}`).setLabel("Accept & Close").setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId(`denyClose_${ticketId}`).setLabel("Keep Open").setStyle(ButtonStyle.Danger)
+        new ButtonBuilder().setCustomId(`acceptClose_${ticketId}`).setLabel("Accept & Close").setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId(`denyClose_${ticketId}`).setLabel("Keep Open").setStyle(ButtonStyle.Secondary)
       );
 
       const channel = await bot.channels.fetch(ticket.threadId);
@@ -117,7 +117,7 @@ router.post(
       }
 
       const ticket = await AppDataSource.manager.findOne(Ticket, {
-        where: { id: Number(ticketId) },
+        where: { id: new ObjectId(ticketId) },
       });
 
       if (!ticket) {

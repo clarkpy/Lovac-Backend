@@ -20,18 +20,18 @@ const discord_bot_1 = require("../discord-bot");
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("../logger"));
+const mongodb_1 = require("mongodb");
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 router.post("/close-ticket", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { staffId, staffUsername, ticketId } = req.body;
-        if (!staffId || !staffUsername || !ticketId) {
+        const { staffId, ticketId } = req.body;
+        if (!staffId || !ticketId) {
             res.status(400).json({ error: "Meow, it looks like some details are missing from your request!" });
             return;
         }
         const staffCheckResponse = yield axios_1.default.post(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
-            staffId: staffId,
-            discordUsername: staffUsername
+            staffId: staffId
         });
         if (staffCheckResponse.status !== 200) {
             res.status(403).json({ error: "Brrr! It seems like this staff member is not purr-fectly recognized in our winter wonderland." });
@@ -42,8 +42,8 @@ router.post("/close-ticket", (req, res) => __awaiter(void 0, void 0, void 0, fun
             res.status(500).json({ error: "Oh no! A flurry of problems has caused a cat-astrophe in our cozy corner!" });
             return;
         }
-        const ticket = yield data_source_1.AppDataSource.manager.findOne(Ticket_1.Ticket, {
-            where: { id: Number(ticketId) },
+        const ticket = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({
+            where: { _id: new mongodb_1.ObjectId(ticketId) },
         });
         if (!ticket) {
             res.status(404).json({ error: "Purr-haps this ticket has been swept away by the snowy winds?" });
@@ -58,7 +58,7 @@ router.post("/close-ticket", (req, res) => __awaiter(void 0, void 0, void 0, fun
             .setDescription(`Hey <@${ticket.ownerId}>,\n\n<@${staffData.discordId}> wants to close this ticket.\nClick 'Accept & Close' to close the ticket or 'Keep Open' to keep it open.\n\n**This action is irreversible and all messages will be transcripted.**`)
             .setAuthor({ name: `${staffData.discordDisplayName}`, iconURL: `${staffData.discordAvatar}` })
             .setColor(0xff0000);
-        const row = new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.ButtonBuilder().setCustomId(`acceptClose_${ticketId}`).setLabel("Accept & Close").setStyle(discord_js_1.ButtonStyle.Success), new discord_js_1.ButtonBuilder().setCustomId(`denyClose_${ticketId}`).setLabel("Keep Open").setStyle(discord_js_1.ButtonStyle.Danger));
+        const row = new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.ButtonBuilder().setCustomId(`acceptClose_${ticketId}`).setLabel("Accept & Close").setStyle(discord_js_1.ButtonStyle.Danger), new discord_js_1.ButtonBuilder().setCustomId(`denyClose_${ticketId}`).setLabel("Keep Open").setStyle(discord_js_1.ButtonStyle.Secondary));
         const channel = yield discord_bot_1.bot.channels.fetch(ticket.threadId);
         if (channel && channel.isTextBased()) {
             yield channel.send({ embeds: [embed], components: [row] });
@@ -96,7 +96,7 @@ router.post("/force-close-ticket", (req, res) => __awaiter(void 0, void 0, void 
             return;
         }
         const ticket = yield data_source_1.AppDataSource.manager.findOne(Ticket_1.Ticket, {
-            where: { id: Number(ticketId) },
+            where: { id: new mongodb_1.ObjectId(ticketId) },
         });
         if (!ticket) {
             res.status(404).json({ error: "Purr-haps this ticket has been swept away by the snowy winds?" });
