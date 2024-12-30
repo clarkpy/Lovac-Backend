@@ -1,11 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from "typeorm";
+import { Entity, ObjectIdColumn, ObjectId, Column, OneToMany, ManyToOne } from "typeorm";
 import { Message } from "./Message";
 import { Team } from "./Team";
 
 @Entity()
 export class Ticket {
-    @PrimaryGeneratedColumn()
-    id!: number;
+    @ObjectIdColumn()
+    id!: ObjectId;
 
     @Column({ type: "varchar", nullable: true })
     assignee!: string | null;
@@ -32,7 +32,7 @@ export class Ticket {
     dateClosed!: Date | null;
 
     @Column({ type: "varchar", nullable: true })
-    threadId!: string | null;
+    threadId!: string;
 
     @Column({ type: "varchar" })
     ownerId!: string;
