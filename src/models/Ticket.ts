@@ -4,7 +4,7 @@ import { Team } from "./Team";
 
 @Entity()
 export class Ticket {
-    @PrimaryColumn({ type: "int", unique: true })
+    @PrimaryColumn()
     id!: number;
 
     @Column({ type: "varchar", nullable: true })
@@ -34,6 +34,6 @@ export class Ticket {
     @Column({ type: "varchar", nullable: true })
     threadId!: string;
 
-    @Column({ type: "varchar" })
+    @Column({ type: "varchar", nullable: true })
     ownerId!: string;
 }

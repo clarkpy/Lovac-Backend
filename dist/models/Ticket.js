@@ -17,7 +17,7 @@ let Ticket = class Ticket {
 };
 exports.Ticket = Ticket;
 __decorate([
-    (0, typeorm_1.PrimaryColumn)({ type: "int", unique: true }),
+    (0, typeorm_1.PrimaryColumn)(),
     __metadata("design:type", Number)
 ], Ticket.prototype, "id", void 0);
 __decorate([
@@ -57,7 +57,7 @@ __decorate([
     __metadata("design:type", String)
 ], Ticket.prototype, "threadId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "varchar" }),
+    (0, typeorm_1.Column)({ type: "varchar", nullable: true }),
     __metadata("design:type", String)
 ], Ticket.prototype, "ownerId", void 0);
 exports.Ticket = Ticket = __decorate([
