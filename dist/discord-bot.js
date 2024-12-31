@@ -118,7 +118,7 @@ exports.bot.on("messageCreate", (message) => __awaiter(void 0, void 0, void 0, f
     }
 }));
 exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g;
     if (interaction.isCommand()) {
         if (interaction.commandName === "sendpanel") {
             const embed = new discord_js_1.EmbedBuilder()
@@ -207,35 +207,89 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
             yield interaction.reply({ content: `Ticket ${ticketId} remains open.`, ephemeral: false });
         }
         else if (action === "createticket") {
+            const channel = interaction.channel;
+            if (!channel) {
+                console.error('Channel is undefined.');
+                yield interaction.reply({ content: 'Channel not found.', ephemeral: true });
+                return;
+            }
+            if (!("threads" in channel)) {
+                console.error('Channel does not support threads.');
+                yield interaction.reply({ content: 'This channel does not support threads.', ephemeral: true });
+                return;
+            }
             try {
-                const channel = interaction.channel;
+                const discordId = interaction.user.id;
+                let user = yield userRepository.findOne({ where: { discordId } });
+                if (user) {
+                    if (user.isBlacklisted) {
+                        return interaction.reply({ content: 'You are currently blacklisted from creating tickets.', ephemeral: true });
+                    }
+                    if (user.openTickets >= 3) {
+                        return interaction.reply({ content: 'You have reached the maximum number of open tickets.', ephemeral: true });
+                    }
+                    if (user.totalTickets >= 50) {
+                        return interaction.reply({ content: 'You have reached the maximum number of total tickets. Please contact <@721017166652244018>', ephemeral: true });
+                    }
+                    user.totalTickets += 1;
+                    user.openTickets += 1;
+                    yield userRepository.save(user);
+                }
+                else {
+                    user = new User_1.User();
+                    user.discordId = discordId;
+                    user.totalTickets = 1;
+                    user.openTickets = 1;
+                    user.isBlacklisted = false;
+                    yield userRepository.save(user);
+                }
                 const ticketNumber = yield (0, sequence_1.getNextSequenceValue)("ticketNumber");
                 const thread = yield channel.threads.create({
                     name: `ticket-${ticketNumber}`,
                     autoArchiveDuration: 60,
+                    type: discord_js_1.ChannelType.PrivateThread,
                     reason: `Ticket created by ${interaction.user.username}`,
                 });
-                const ticket = new Ticket_1.Ticket();
-                ticket.id = ticketNumber;
-                ticket.ownerId = interaction.user.id;
-                ticket.status = "Open";
-                ticket.threadId = thread.id;
-                ticket.dateOpened = new Date();
-                yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).save(ticket);
-                const embed = new discord_js_1.EmbedBuilder()
-                    .setColor('#0099ff')
-                    .setTitle('Ticket Created')
-                    .setDescription(`Ticket #${ticketNumber} created by ${interaction.user.username}.`)
-                    .setTimestamp();
-                yield thread.send({ embeds: [embed] });
-                yield interaction.reply({ content: `Ticket created: <#${thread.id}>`, ephemeral: true });
+                yield interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
+                if (thread) {
+                    const welcomeEmbed = new discord_js_1.EmbedBuilder()
+                        .setColor('#0099ff')
+                        .setTitle('Ticket Created')
+                        .setAuthor({ name: interaction.user.displayName, iconURL: interaction.user.displayAvatarURL() })
+                        .setDescription(`Thank you for creating a ticket in **${(_e = interaction.guild) === null || _e === void 0 ? void 0 : _e.name}**.\n\nPlease explain your issue and provide the following info:\n\n - Username\n - Clip (For report / appeal)\n - Transaction ID (For purchase issues)\n - Any other relevant information\n\n**A staff member will be with you shortly, there are currently ${ticketNumber} other tickets open.**`)
+                        .setFooter({ text: 'Lovac', iconURL: (_f = exports.bot.user) === null || _f === void 0 ? void 0 : _f.displayAvatarURL() })
+                        .setTimestamp();
+                    yield thread.send({ content: `<@${interaction.user.id}>,`, embeds: [welcomeEmbed] });
+                    const ticket = new Ticket_1.Ticket();
+                    ticket.id = ticketNumber;
+                    ticket.assignee = null;
+                    ticket.tags = [];
+                    ticket.status = "Open";
+                    ticket.messages = [];
+                    ticket.dateOpened = new Date();
+                    ticket.dateClosed = null;
+                    ticket.categories = ["Open", "All"];
+                    ticket.threadId = thread.id;
+                    ticket.ownerId = interaction.user.id;
+                    yield ticketRepository.save(ticket);
+                    const openTickets = yield ticketRepository.find({
+                        where: { status: "Open" },
+                    });
+                    const openTicketCount = openTickets.length;
+                    (_g = exports.bot.user) === null || _g === void 0 ? void 0 : _g.setPresence({
+                        activities: [{ name: `${openTicketCount} open tickets`, type: discord_js_1.ActivityType.Watching }],
+                        status: "dnd",
+                    });
+                    (0, logger_1.default)('> BOT: Ticket created.', 'log');
+                    (0, logger_1.default)(`>  TICKET: ${ticket.id}/${ticket.threadId}`, 'log');
+                    (0, logger_1.default)(`>  STATUS: ${ticket.status}`, 'log');
+                    (0, logger_1.default)(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
+                    checkOpenTickets();
+                }
             }
             catch (error) {
-                (0, logger_1.default)('Error creating ticket thread:', 'error');
-                (0, logger_1.default)(`${error}`, 'error');
-                if (!interaction.replied) {
-                    yield interaction.reply({ content: 'There was an error creating the ticket. Please try again later.', ephemeral: true });
-                }
+                console.error('Error creating ticket thread:', error);
+                yield interaction.reply({ content: 'There was an error creating the ticket. Please try again later.', ephemeral: true });
             }
         }
         else if (action === "requestHigherUp") {

@@ -223,39 +223,108 @@ bot.on("interactionCreate", async (interaction) => {
         } else if (action === "denyClose") {
             await interaction.reply({ content: `Ticket ${ticketId} remains open.`, ephemeral: false });
         } else if (action === "createticket") {
+
+            const channel = interaction.channel;
+
+            if (!channel) {
+                console.error('Channel is undefined.');
+                await interaction.reply({ content: 'Channel not found.', ephemeral: true });
+                return;
+            }
+
+            if (!("threads" in channel)) {
+                console.error('Channel does not support threads.');
+                await interaction.reply({ content: 'This channel does not support threads.', ephemeral: true });
+                return;
+            }
+
             try {
-                const channel = interaction.channel as TextChannel;
+                const discordId = interaction.user.id;
+
+                let user = await userRepository.findOne({ where: { discordId } });
+
+                if (user) {
+
+                    if (user.isBlacklisted) {
+                        return interaction.reply({ content: 'You are currently blacklisted from creating tickets.', ephemeral: true });
+                    }
+
+                    if (user.openTickets >= 3) {
+                        return interaction.reply({ content: 'You have reached the maximum number of open tickets.', ephemeral: true });
+                        
+                    }
+
+                    if (user.totalTickets >= 50) {
+                        return interaction.reply({ content: 'You have reached the maximum number of total tickets. Please contact <@721017166652244018>', ephemeral: true });
+                    }
+
+                    user.totalTickets += 1;
+                    user.openTickets += 1;
+                    await userRepository.save(user);
+
+                } else {
+                    user = new User();
+                    user.discordId = discordId;
+                    user.totalTickets = 1;
+                    user.openTickets = 1;
+                    user.isBlacklisted = false;
+                    await userRepository.save(user);
+                }
+
                 const ticketNumber = await getNextSequenceValue("ticketNumber");
 
-                const thread = await channel.threads.create({
+                const thread = await (channel as TextChannel).threads.create({
                     name: `ticket-${ticketNumber}`,
                     autoArchiveDuration: 60,
+                    type: ChannelType.PrivateThread,
                     reason: `Ticket created by ${interaction.user.username}`,
                 });
 
-                const ticket = new Ticket();
-                ticket.id = ticketNumber;
-                ticket.ownerId = interaction.user.id;
-                ticket.status = "Open";
-                ticket.threadId = thread.id;
-                ticket.dateOpened = new Date();
+                await interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
 
-                await AppDataSource.getMongoRepository(Ticket).save(ticket);
+                if (thread) {
+                    const welcomeEmbed = new EmbedBuilder()
+                        .setColor('#0099ff')
+                        .setTitle('Ticket Created')
+                        .setAuthor({ name: interaction.user.displayName, iconURL: interaction.user.displayAvatarURL() })
+                        .setDescription(`Thank you for creating a ticket in **${interaction.guild?.name}**.\n\nPlease explain your issue and provide the following info:\n\n - Username\n - Clip (For report / appeal)\n - Transaction ID (For purchase issues)\n - Any other relevant information\n\n**A staff member will be with you shortly, there are currently ${ticketNumber} other tickets open.**`)
+                        .setFooter({ text: 'Lovac', iconURL: bot.user?.displayAvatarURL() })
+                        .setTimestamp();
 
-                const embed = new EmbedBuilder()
-                    .setColor('#0099ff')
-                    .setTitle('Ticket Created')
-                    .setDescription(`Ticket #${ticketNumber} created by ${interaction.user.username}.`)
-                    .setTimestamp();
+                    await thread.send({ content: `<@${interaction.user.id}>,`, embeds: [welcomeEmbed] });
 
-                await thread.send({ embeds: [embed] });
-                await interaction.reply({ content: `Ticket created: <#${thread.id}>`, ephemeral: true });
-            } catch (error) {
-                log('Error creating ticket thread:', 'error');
-                log(`${error}`, 'error');
-                if (!interaction.replied) {
-                    await interaction.reply({ content: 'There was an error creating the ticket. Please try again later.', ephemeral: true });
+                    const ticket = new Ticket();
+                    ticket.id = ticketNumber;
+                    ticket.assignee = null;
+                    ticket.tags = [];
+                    ticket.status = "Open";
+                    ticket.messages = [];
+                    ticket.dateOpened = new Date();
+                    ticket.dateClosed = null;
+                    ticket.categories = ["Open", "All"];
+                    ticket.threadId = thread.id;
+                    ticket.ownerId = interaction.user.id;
+
+                    await ticketRepository.save(ticket);
+                    const openTickets = await ticketRepository.find({
+                        where: { status: "Open" },
+                    });
+
+                    const openTicketCount = openTickets.length;
+
+                    bot.user?.setPresence({
+                        activities: [{ name: `${openTicketCount} open tickets`, type: ActivityType.Watching }],
+                        status: "dnd",
+                    });
+                    log('> BOT: Ticket created.', 'log');
+                    log(`>  TICKET: ${ticket.id}/${ticket.threadId}`, 'log');
+                    log(`>  STATUS: ${ticket.status}`, 'log');
+                    log(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
+                    checkOpenTickets();
                 }
+            } catch (error) {
+                console.error('Error creating ticket thread:', error);
+                await interaction.reply({ content: 'There was an error creating the ticket. Please try again later.', ephemeral: true });
             }
         } else if (action === "requestHigherUp") {
             const ticket = await ticketRepository.findOne({
