@@ -1,13 +1,13 @@
-import { Entity, ObjectIdColumn, ObjectId, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class Counter {
-    @ObjectIdColumn()
-    id!: ObjectId;
+    @PrimaryGeneratedColumn()
+    id: number = 0;
 
     @Column()
-    name!: string;
+    name: string = "";
 
     @Column()
-    value!: number;
+    value: number = 0;
 }
