@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 import log from "./logger";
 import { blacklistUser } from './commands/blacklist';
 import { userInsight } from './commands/user-insight';
+import { getNextSequenceValue } from "./utils/sequence";
 
 dotenv.config();
 
@@ -185,7 +186,7 @@ bot.on("interactionCreate", async (interaction) => {
 
         if (action === "acceptClose") {
             const ticket = await ticketRepository.findOne({
-                where: { id: new ObjectId(ticketId) },
+                where: { id: parseInt(ticketId) },
             });
 
             const welcomeEmbed = new EmbedBuilder()
@@ -270,13 +271,10 @@ bot.on("interactionCreate", async (interaction) => {
                     await userRepository.save(user);
                 }
 
-                const tickets = await ticketRepository.find();
-                const ticketCount = tickets.length;
-                const newTicketNumber = ticketCount + 1;
-                const formattedTicketNumber = String(newTicketNumber).padStart(4, '0');
+                const ticketNumber = await getNextSequenceValue("ticketNumber");
 
                 const thread = await (channel as TextChannel).threads.create({
-                    name: `ticket-${formattedTicketNumber}`,
+                    name: `ticket-${ticketNumber}`,
                     autoArchiveDuration: 60,
                     type: ChannelType.PrivateThread,
                     reason: `Ticket created by ${interaction.user.username}`,
@@ -289,13 +287,14 @@ bot.on("interactionCreate", async (interaction) => {
                         .setColor('#0099ff')
                         .setTitle('Ticket Created')
                         .setAuthor({ name: interaction.user.displayName, iconURL: interaction.user.displayAvatarURL() })
-                        .setDescription(`Thank you for creating a ticket in **${interaction.guild?.name}**.\n\nPlease explain your issue and provide the following info:\n\n - Username\n - Clip (For report / appeal)\n - Transaction ID (For purchase issues)\n - Any other relevant information\n\n**A staff member will be with you shortly, there are currently ${ticketCount} other tickets open.**`)
+                        .setDescription(`Thank you for creating a ticket in **${interaction.guild?.name}**.\n\nPlease explain your issue and provide the following info:\n\n - Username\n - Clip (For report / appeal)\n - Transaction ID (For purchase issues)\n - Any other relevant information\n\n**A staff member will be with you shortly, there are currently ${ticketNumber} other tickets open.**`)
                         .setFooter({ text: 'Lovac', iconURL: bot.user?.displayAvatarURL() })
                         .setTimestamp();
 
                     await thread.send({ content: `<@${interaction.user.id}>,`, embeds: [welcomeEmbed] });
 
                     const ticket = new Ticket();
+                    ticket.id = ticketNumber;
                     ticket.assignee = null;
                     ticket.tags = [];
                     ticket.status = "Open";
@@ -329,7 +328,7 @@ bot.on("interactionCreate", async (interaction) => {
             }
         } else if (action === "requestHigherUp") {
             const ticket = await ticketRepository.findOne({
-                where: { id: new ObjectId(ticketId) },
+                where: { id: parseInt(ticketId) },
                 relations: ["assignedGroup"]
             });
 

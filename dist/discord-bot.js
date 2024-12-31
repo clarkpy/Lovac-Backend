@@ -16,13 +16,13 @@ exports.bot = void 0;
 const discord_js_1 = require("discord.js");
 const Ticket_1 = require("./models/Ticket");
 const data_source_1 = require("./data-source");
-const mongodb_1 = require("mongodb");
 const Team_1 = require("./models/Team");
 const User_1 = require("./models/User");
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("./logger"));
 const blacklist_1 = require("./commands/blacklist");
 const user_insight_1 = require("./commands/user-insight");
+const sequence_1 = require("./utils/sequence");
 dotenv_1.default.config();
 exports.bot = new discord_js_1.Client({
     intents: [
@@ -173,7 +173,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
         const [action, ticketId] = interaction.customId.split("_");
         if (action === "acceptClose") {
             const ticket = yield ticketRepository.findOne({
-                where: { id: new mongodb_1.ObjectId(ticketId) },
+                where: { id: parseInt(ticketId) },
             });
             const welcomeEmbed = new discord_js_1.EmbedBuilder()
                 .setColor('#0099ff')
@@ -243,12 +243,9 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                     user.isBlacklisted = false;
                     yield userRepository.save(user);
                 }
-                const tickets = yield ticketRepository.find();
-                const ticketCount = tickets.length;
-                const newTicketNumber = ticketCount + 1;
-                const formattedTicketNumber = String(newTicketNumber).padStart(4, '0');
+                const ticketNumber = yield (0, sequence_1.getNextSequenceValue)("ticketNumber");
                 const thread = yield channel.threads.create({
-                    name: `ticket-${formattedTicketNumber}`,
+                    name: `ticket-${ticketNumber}`,
                     autoArchiveDuration: 60,
                     type: discord_js_1.ChannelType.PrivateThread,
                     reason: `Ticket created by ${interaction.user.username}`,
@@ -259,11 +256,12 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                         .setColor('#0099ff')
                         .setTitle('Ticket Created')
                         .setAuthor({ name: interaction.user.displayName, iconURL: interaction.user.displayAvatarURL() })
-                        .setDescription(`Thank you for creating a ticket in **${(_e = interaction.guild) === null || _e === void 0 ? void 0 : _e.name}**.\n\nPlease explain your issue and provide the following info:\n\n - Username\n - Clip (For report / appeal)\n - Transaction ID (For purchase issues)\n - Any other relevant information\n\n**A staff member will be with you shortly, there are currently ${ticketCount} other tickets open.**`)
+                        .setDescription(`Thank you for creating a ticket in **${(_e = interaction.guild) === null || _e === void 0 ? void 0 : _e.name}**.\n\nPlease explain your issue and provide the following info:\n\n - Username\n - Clip (For report / appeal)\n - Transaction ID (For purchase issues)\n - Any other relevant information\n\n**A staff member will be with you shortly, there are currently ${ticketNumber} other tickets open.**`)
                         .setFooter({ text: 'Lovac', iconURL: (_f = exports.bot.user) === null || _f === void 0 ? void 0 : _f.displayAvatarURL() })
                         .setTimestamp();
                     yield thread.send({ content: `<@${interaction.user.id}>,`, embeds: [welcomeEmbed] });
                     const ticket = new Ticket_1.Ticket();
+                    ticket.id = ticketNumber;
                     ticket.assignee = null;
                     ticket.tags = [];
                     ticket.status = "Open";
@@ -296,7 +294,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
         }
         else if (action === "requestHigherUp") {
             const ticket = yield ticketRepository.findOne({
-                where: { id: new mongodb_1.ObjectId(ticketId) },
+                where: { id: parseInt(ticketId) },
                 relations: ["assignedGroup"]
             });
             if (ticket) {
