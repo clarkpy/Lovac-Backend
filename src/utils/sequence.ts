@@ -1,19 +1,18 @@
-import { Counter } from "../models/Counter";
-import { AppDataSource } from "../data-source";
+import { getRepository } from 'typeorm';
+import { Counter } from '../models/Counter';
 
-export const getNextSequenceValue = async (sequenceName: string): Promise<number> => {
-    const counterRepository = AppDataSource.getMongoRepository(Counter);
-    const counter = await counterRepository.findOne({ where: { name: sequenceName } });
+export async function getNextSequenceValue(sequenceName: string): Promise<number> {
+    const counterRepository = getRepository(Counter);
+    let counter = await counterRepository.findOne({ where: { name: sequenceName } });
 
     if (!counter) {
-        const newCounter = new Counter();
-        newCounter.name = sequenceName;
-        newCounter.value = 1;
-        await counterRepository.save(newCounter);
-        return 1;
-    } else {
-        counter.value += 1;
-        await counterRepository.save(counter);
-        return counter.value;
+        counter = new Counter();
+        counter.name = sequenceName;
+        counter.value = 0;
     }
-};
+
+    counter.value += 1;
+    await counterRepository.save(counter);
+
+    return counter.value;
+}

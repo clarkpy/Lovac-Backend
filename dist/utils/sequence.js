@@ -9,23 +9,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNextSequenceValue = void 0;
+exports.getNextSequenceValue = getNextSequenceValue;
+const typeorm_1 = require("typeorm");
 const Counter_1 = require("../models/Counter");
-const data_source_1 = require("../data-source");
-const getNextSequenceValue = (sequenceName) => __awaiter(void 0, void 0, void 0, function* () {
-    const counterRepository = data_source_1.AppDataSource.getMongoRepository(Counter_1.Counter);
-    const counter = yield counterRepository.findOne({ where: { name: sequenceName } });
-    if (!counter) {
-        const newCounter = new Counter_1.Counter();
-        newCounter.name = sequenceName;
-        newCounter.value = 1;
-        yield counterRepository.save(newCounter);
-        return 1;
-    }
-    else {
+function getNextSequenceValue(sequenceName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const counterRepository = (0, typeorm_1.getRepository)(Counter_1.Counter);
+        let counter = yield counterRepository.findOne({ where: { name: sequenceName } });
+        if (!counter) {
+            counter = new Counter_1.Counter();
+            counter.name = sequenceName;
+            counter.value = 0;
+        }
         counter.value += 1;
         yield counterRepository.save(counter);
         return counter.value;
-    }
-});
-exports.getNextSequenceValue = getNextSequenceValue;
+    });
+}
