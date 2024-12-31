@@ -9,6 +9,7 @@ import { Staff } from "./models/Staff";
 import { Category } from "./models/Category";
 import { Team } from "./models/Team";
 import { User } from "./models/User";
+import { Counter } from "./models/Counter";
 
 export const AppDataSource = new DataSource({
     type: "mongodb",
@@ -17,5 +18,5 @@ export const AppDataSource = new DataSource({
     useUnifiedTopology: true,
     synchronize: true,
     logging: true,
-    entities: [Ticket, Message, Tag, Staff, Category, Team, User],
+    entities: [Ticket, Message, Tag, Staff, Category, Team, User, Counter],
 });

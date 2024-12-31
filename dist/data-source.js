@@ -14,6 +14,7 @@ const Staff_1 = require("./models/Staff");
 const Category_1 = require("./models/Category");
 const Team_1 = require("./models/Team");
 const User_1 = require("./models/User");
+const Counter_1 = require("./models/Counter");
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "mongodb",
     url: process.env.MONGODB_URL,
@@ -21,5 +22,5 @@ exports.AppDataSource = new typeorm_1.DataSource({
     useUnifiedTopology: true,
     synchronize: true,
     logging: true,
-    entities: [Ticket_1.Ticket, Message_1.Message, Tag_1.Tag, Staff_1.Staff, Category_1.Category, Team_1.Team, User_1.User],
+    entities: [Ticket_1.Ticket, Message_1.Message, Tag_1.Tag, Staff_1.Staff, Category_1.Category, Team_1.Team, User_1.User, Counter_1.Counter],
 });
