@@ -10,11 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getNextSequenceValue = getNextSequenceValue;
-const typeorm_1 = require("typeorm");
+const data_source_1 = require("../data-source");
 const Counter_1 = require("../models/Counter");
 function getNextSequenceValue(sequenceName) {
     return __awaiter(this, void 0, void 0, function* () {
-        const counterRepository = (0, typeorm_1.getRepository)(Counter_1.Counter);
+        const counterRepository = data_source_1.AppDataSource.getRepository(Counter_1.Counter);
         let counter = yield counterRepository.findOne({ where: { name: sequenceName } });
         if (!counter) {
             counter = new Counter_1.Counter();

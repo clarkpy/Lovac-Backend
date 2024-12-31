@@ -1,8 +1,8 @@
-import { getRepository } from 'typeorm';
+import { AppDataSource } from '../data-source';
 import { Counter } from '../models/Counter';
 
 export async function getNextSequenceValue(sequenceName: string): Promise<number> {
-    const counterRepository = getRepository(Counter);
+    const counterRepository = AppDataSource.getRepository(Counter);
     let counter = await counterRepository.findOne({ where: { name: sequenceName } });
 
     if (!counter) {
