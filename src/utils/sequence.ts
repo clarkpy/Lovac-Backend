@@ -11,11 +11,12 @@ export async function getNextSequenceValue(sequenceName: string): Promise<number
     if (!counter) {
         counter = new Counter();
         counter.name = sequenceName;
-        counter.value = 0;
+        counter.value = 1;
         console.log(`Created new counter: ${JSON.stringify(counter)}`);
+    } else {
+        counter.value += 1;
     }
 
-    counter.value += 1;
     await counterRepository.save(counter);
     console.log(`Updated counter value: ${counter.value}`);
 

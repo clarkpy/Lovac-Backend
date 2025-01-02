@@ -12,16 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Counter = void 0;
 const typeorm_1 = require("typeorm");
 let Counter = class Counter {
-    constructor() {
-        this.id = 0;
-        this.name = "";
-        this.value = 0;
-    }
 };
 exports.Counter = Counter;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
+    (0, typeorm_1.ObjectIdColumn)(),
+    __metadata("design:type", typeorm_1.ObjectId)
 ], Counter.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),

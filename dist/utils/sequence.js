@@ -21,10 +21,12 @@ function getNextSequenceValue(sequenceName) {
         if (!counter) {
             counter = new Counter_1.Counter();
             counter.name = sequenceName;
-            counter.value = 0;
+            counter.value = 1;
             console.log(`Created new counter: ${JSON.stringify(counter)}`);
         }
-        counter.value += 1;
+        else {
+            counter.value += 1;
+        }
         yield counterRepository.save(counter);
         console.log(`Updated counter value: ${counter.value}`);
         return counter.value;
