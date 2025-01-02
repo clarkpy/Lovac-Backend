@@ -245,6 +245,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                 }
                 let ticketNumber;
                 try {
+                    console.log('Attempting to generate ticket number...');
                     ticketNumber = yield (0, sequence_1.getNextSequenceValue)("ticketNumber");
                     console.log(`Generated ticket number: ${ticketNumber}`);
                 }

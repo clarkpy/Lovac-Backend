@@ -273,6 +273,7 @@ bot.on("interactionCreate", async (interaction) => {
 
                 let ticketNumber;
                 try {
+                    console.log('Attempting to generate ticket number...');
                     ticketNumber = await getNextSequenceValue("ticketNumber");
                     console.log(`Generated ticket number: ${ticketNumber}`);
                 } catch (error) {

@@ -15,14 +15,18 @@ const Counter_1 = require("../models/Counter");
 function getNextSequenceValue(sequenceName) {
     return __awaiter(this, void 0, void 0, function* () {
         const counterRepository = data_source_1.AppDataSource.getRepository(Counter_1.Counter);
+        console.log(`Fetching counter for sequence: ${sequenceName}`);
         let counter = yield counterRepository.findOne({ where: { name: sequenceName } });
+        console.log(`Fetched counter: ${counter ? JSON.stringify(counter) : 'not found'}`);
         if (!counter) {
             counter = new Counter_1.Counter();
             counter.name = sequenceName;
             counter.value = 0;
+            console.log(`Created new counter: ${JSON.stringify(counter)}`);
         }
         counter.value += 1;
         yield counterRepository.save(counter);
+        console.log(`Updated counter value: ${counter.value}`);
         return counter.value;
     });
 }
