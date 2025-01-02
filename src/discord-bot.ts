@@ -289,7 +289,6 @@ bot.on("interactionCreate", async (interaction) => {
                     reason: `Ticket created by ${interaction.user.username}`,
                 });
 
-                await interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
 
                 if (thread) {
                     const welcomeEmbed = new EmbedBuilder()
@@ -330,6 +329,7 @@ bot.on("interactionCreate", async (interaction) => {
                     log(`>  STATUS: ${ticket.status}`, 'log');
                     log(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
                     checkOpenTickets();
+                    await interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
                 }
             } catch (error) {
                 console.error('Error creating ticket thread:', error);

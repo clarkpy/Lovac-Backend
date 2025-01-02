@@ -15,8 +15,8 @@ let Counter = class Counter {
 };
 exports.Counter = Counter;
 __decorate([
-    (0, typeorm_1.ObjectIdColumn)(),
-    __metadata("design:type", typeorm_1.ObjectId)
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
 ], Counter.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),

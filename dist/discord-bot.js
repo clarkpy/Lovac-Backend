@@ -260,7 +260,6 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                     type: discord_js_1.ChannelType.PrivateThread,
                     reason: `Ticket created by ${interaction.user.username}`,
                 });
-                yield interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
                 if (thread) {
                     const welcomeEmbed = new discord_js_1.EmbedBuilder()
                         .setColor('#0099ff')
@@ -295,6 +294,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                     (0, logger_1.default)(`>  STATUS: ${ticket.status}`, 'log');
                     (0, logger_1.default)(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
                     checkOpenTickets();
+                    yield interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
                 }
             }
             catch (error) {
