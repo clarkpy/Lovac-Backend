@@ -271,7 +271,15 @@ bot.on("interactionCreate", async (interaction) => {
                     await userRepository.save(user);
                 }
 
-                const ticketNumber = await getNextSequenceValue("ticketNumber");
+                let ticketNumber;
+                try {
+                    ticketNumber = await getNextSequenceValue("ticketNumber");
+                    console.log(`Generated ticket number: ${ticketNumber}`);
+                } catch (error) {
+                    console.error('Error generating ticket number:', error);
+                    await interaction.reply({ content: 'There was an error creating your ticket. Please try again later.', ephemeral: true });
+                    return;
+                }
 
                 const thread = await (channel as TextChannel).threads.create({
                     name: `ticket-${ticketNumber}`,

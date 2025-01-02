@@ -243,7 +243,16 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                     user.isBlacklisted = false;
                     yield userRepository.save(user);
                 }
-                const ticketNumber = yield (0, sequence_1.getNextSequenceValue)("ticketNumber");
+                let ticketNumber;
+                try {
+                    ticketNumber = yield (0, sequence_1.getNextSequenceValue)("ticketNumber");
+                    console.log(`Generated ticket number: ${ticketNumber}`);
+                }
+                catch (error) {
+                    console.error('Error generating ticket number:', error);
+                    yield interaction.reply({ content: 'There was an error creating your ticket. Please try again later.', ephemeral: true });
+                    return;
+                }
                 const thread = yield channel.threads.create({
                     name: `ticket-${ticketNumber}`,
                     autoArchiveDuration: 60,
