@@ -112,7 +112,7 @@ router.post('/assignedtickets', (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 }));
 const getTicketById = (ticketId) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({ where: { _id: ticketId } });
+    return yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({ where: { id: ticketId } });
 });
 router.get("/tickets/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {

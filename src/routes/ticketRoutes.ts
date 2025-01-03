@@ -101,7 +101,7 @@ router.post('/assignedtickets', async (req, res) => {
 });
 
 const getTicketById = async (ticketId: ObjectId): Promise<Ticket | null> => {
-    return await AppDataSource.getMongoRepository(Ticket).findOne({ where: { _id: ticketId } });
+    return await AppDataSource.getMongoRepository(Ticket).findOne({ where: { id: ticketId } });
 };
 
 router.get("/tickets/:id", async (req: Request, res: Response) => {
