@@ -320,7 +320,9 @@ bot.on("interactionCreate", async (interaction) => {
                     console.log('Ticket object before saving:', ticket);
 
                     try {
+                        console.log('Attempting to save ticket...');
                         await ticketRepository.save(ticket);
+                        console.log('Ticket object after saving:', ticket);
                         const openTickets = await ticketRepository.find({
                             where: { status: "Open" },
                         });

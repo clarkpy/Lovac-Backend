@@ -286,7 +286,9 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                     ticket.ownerId = interaction.user.id;
                     console.log('Ticket object before saving:', ticket);
                     try {
+                        console.log('Attempting to save ticket...');
                         yield ticketRepository.save(ticket);
+                        console.log('Ticket object after saving:', ticket);
                         const openTickets = yield ticketRepository.find({
                             where: { status: "Open" },
                         });
