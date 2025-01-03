@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const data_source_1 = require("../data-source");
 const Ticket_1 = require("../models/Ticket");
-const mongodb_1 = require("mongodb");
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("../logger"));
 const sequence_1 = require("../utils/sequence");
@@ -116,7 +115,7 @@ const getTicketById = (ticketId) => __awaiter(void 0, void 0, void 0, function* 
 });
 router.get("/tickets/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const ticketId = new mongodb_1.ObjectId(req.params.id);
+        const ticketId = parseInt(req.params.id, 10);
         const ticket = yield getTicketById(ticketId);
         if (ticket) {
             res.json(ticket);
