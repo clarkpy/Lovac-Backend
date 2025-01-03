@@ -275,6 +275,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                     ticket.id = ticketNumber;
                     console.log('did not fail at ticket id');
                     ticket.assignee = null;
+                    ticket.assignedGroup = null;
                     ticket.tags = [];
                     ticket.status = "Open";
                     ticket.messages = [];

@@ -307,6 +307,7 @@ bot.on("interactionCreate", async (interaction) => {
                     ticket.id = ticketNumber;
                     console.log('did not fail at ticket id');
                     ticket.assignee = null;
+                    ticket.assignedGroup = null;
                     ticket.tags = [];
                     ticket.status = "Open";
                     ticket.messages = [];
