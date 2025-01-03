@@ -41,7 +41,7 @@ router.post('/new-message', (req, res) => __awaiter(void 0, void 0, void 0, func
         const staffData = staffCheckResponse.data;
         const discordId = staffData.discordId;
         const ticket = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({
-            where: { _id: new mongodb_1.ObjectId(ticketId) }
+            where: { id: ticketId }
         });
         if (!ticket) {
             res.status(404).json({ error: "The ticket you're trying to message does not exist." });
@@ -102,7 +102,7 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
             return;
         }
         const ticket = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({
-            where: { _id: new mongodb_1.ObjectId(ticketId) },
+            where: { id: ticketId },
             relations: ["messages"]
         });
         if (!ticket) {
@@ -129,7 +129,7 @@ router.delete('/messages/:messageId', (req, res) => __awaiter(void 0, void 0, vo
             return;
         }
         const message = yield data_source_1.AppDataSource.getMongoRepository(Message_1.Message).findOne({
-            where: { _id: new mongodb_1.ObjectId(messageId) }
+            where: { id: messageId }
         });
         if (!message) {
             res.status(404).json({ error: "The message you're trying to delete does not exist." });

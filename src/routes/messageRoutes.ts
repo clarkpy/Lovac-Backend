@@ -35,7 +35,7 @@ router.post('/new-message', async (req: Request, res: Response) => {
         const discordId = staffData.discordId;
 
         const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
-            where: { _id: new ObjectId(ticketId) }
+            where: { id: ticketId }
         });
 
         if (!ticket) {
@@ -109,7 +109,7 @@ router.post('/messages', async (req: Request, res: Response) => {
         }
 
         const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
-            where: { _id: new ObjectId(ticketId) },
+            where: { id: ticketId },
             relations: ["messages"]
         });
 
@@ -140,7 +140,7 @@ router.delete('/messages/:messageId', async (req: Request, res: Response) => {
         }
 
         const message = await AppDataSource.getMongoRepository(Message).findOne({
-            where: { _id: new ObjectId(messageId) }
+            where: { id: messageId }
         });
 
         if (!message) {
