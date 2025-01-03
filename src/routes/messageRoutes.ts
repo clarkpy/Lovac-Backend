@@ -83,10 +83,21 @@ router.post('/new-message', async (req: Request, res: Response) => {
     }
 });
 
-router.get('/messages/:ticketId', async (req: Request, res: Response) => {
-    const { ticketId } = req.params;
+router.get('/messages/', async (req: Request, res: Response) => {
+
+    const { ticketId, staffId } = req.body;
 
     try {
+
+        const staffCheckResponse = await axios.post(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
+            staffId: staffId
+        });
+
+        if (staffCheckResponse.status !== 200) {
+            res.status(403).json({ error: "Brrr! It looks like this staff member is not recognized in our winter wonderland." });
+            return;
+        }
+
         const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
             where: { _id: new ObjectId(ticketId) },
             relations: ["messages"]

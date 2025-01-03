@@ -82,9 +82,16 @@ router.post('/new-message', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
-router.get('/messages/:ticketId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { ticketId } = req.params;
+router.get('/messages/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { ticketId, staffId } = req.body;
     try {
+        const staffCheckResponse = yield axios_1.default.post(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
+            staffId: staffId
+        });
+        if (staffCheckResponse.status !== 200) {
+            res.status(403).json({ error: "Brrr! It looks like this staff member is not recognized in our winter wonderland." });
+            return;
+        }
         const ticket = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({
             where: { _id: new mongodb_1.ObjectId(ticketId) },
             relations: ["messages"]
