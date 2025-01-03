@@ -87,7 +87,6 @@ router.post('/messages', async (req: Request, res: Response) => {
     const { ticketId, staffId } = req.body;
 
     try {
-        console.log(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`);
 
         if (!staffId) {
             res.status(400).json({ error: "Staff ID is required to fetch messages." });
