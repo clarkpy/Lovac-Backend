@@ -89,6 +89,13 @@ router.post('/messages', async (req: Request, res: Response) => {
 
     try {
 
+        console.log(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`);
+
+        if (!staffId) {
+            res.status(400).json({ error: "Staff ID is required to fetch messages." });
+            return;
+        }
+
         const staffCheckResponse = await axios.post(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
             staffId: staffId
         });
