@@ -83,7 +83,7 @@ router.post('/new-message', async (req: Request, res: Response) => {
     }
 });
 
-router.get('/messages/', async (req: Request, res: Response) => {
+router.post('/messages', async (req: Request, res: Response) => {
 
     const { ticketId, staffId } = req.body;
 

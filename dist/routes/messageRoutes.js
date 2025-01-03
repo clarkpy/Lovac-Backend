@@ -82,7 +82,7 @@ router.post('/new-message', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
-router.get('/messages/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { ticketId, staffId } = req.body;
     try {
         const staffCheckResponse = yield axios_1.default.post(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
