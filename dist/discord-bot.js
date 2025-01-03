@@ -269,8 +269,11 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                         .setFooter({ text: 'Lovac', iconURL: (_f = exports.bot.user) === null || _f === void 0 ? void 0 : _f.displayAvatarURL() })
                         .setTimestamp();
                     yield thread.send({ content: `<@${interaction.user.id}>,`, embeds: [welcomeEmbed] });
+                    console.log('Attempting to generate ticket number...');
                     const ticket = new Ticket_1.Ticket();
+                    console.log(`Generated ticket number: ${ticketNumber}`);
                     ticket.id = ticketNumber;
+                    console.log('did not fail at ticket id');
                     ticket.assignee = null;
                     ticket.tags = [];
                     ticket.status = "Open";
@@ -280,21 +283,28 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                     ticket.categories = ["Open", "All"];
                     ticket.threadId = thread.id;
                     ticket.ownerId = interaction.user.id;
-                    yield ticketRepository.save(ticket);
-                    const openTickets = yield ticketRepository.find({
-                        where: { status: "Open" },
-                    });
-                    const openTicketCount = openTickets.length;
-                    (_g = exports.bot.user) === null || _g === void 0 ? void 0 : _g.setPresence({
-                        activities: [{ name: `${openTicketCount} open tickets`, type: discord_js_1.ActivityType.Watching }],
-                        status: "dnd",
-                    });
-                    (0, logger_1.default)('> BOT: Ticket created.', 'log');
-                    (0, logger_1.default)(`>  TICKET: ${ticket.id}/${ticket.threadId}`, 'log');
-                    (0, logger_1.default)(`>  STATUS: ${ticket.status}`, 'log');
-                    (0, logger_1.default)(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
-                    checkOpenTickets();
-                    yield interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
+                    console.log('Ticket object before saving:', ticket);
+                    try {
+                        yield ticketRepository.save(ticket);
+                        const openTickets = yield ticketRepository.find({
+                            where: { status: "Open" },
+                        });
+                        const openTicketCount = openTickets.length;
+                        (_g = exports.bot.user) === null || _g === void 0 ? void 0 : _g.setPresence({
+                            activities: [{ name: `${openTicketCount} open tickets`, type: discord_js_1.ActivityType.Watching }],
+                            status: "dnd",
+                        });
+                        (0, logger_1.default)('> BOT: Ticket created.', 'log');
+                        (0, logger_1.default)(`>  TICKET: ${ticket.id}/${ticket.threadId}`, 'log');
+                        (0, logger_1.default)(`>  STATUS: ${ticket.status}`, 'log');
+                        (0, logger_1.default)(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
+                        checkOpenTickets();
+                        yield interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
+                    }
+                    catch (error) {
+                        console.error('Error creating ticket:', error);
+                        yield interaction.reply({ content: 'There was an error creating the ticket. Please try again later.', ephemeral: true });
+                    }
                 }
             }
             catch (error) {

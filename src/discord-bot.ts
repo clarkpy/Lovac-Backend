@@ -301,8 +301,11 @@ bot.on("interactionCreate", async (interaction) => {
 
                     await thread.send({ content: `<@${interaction.user.id}>,`, embeds: [welcomeEmbed] });
 
+                    console.log('Attempting to generate ticket number...');
                     const ticket = new Ticket();
+                    console.log(`Generated ticket number: ${ticketNumber}`);
                     ticket.id = ticketNumber;
+                    console.log('did not fail at ticket id');
                     ticket.assignee = null;
                     ticket.tags = [];
                     ticket.status = "Open";
@@ -313,23 +316,30 @@ bot.on("interactionCreate", async (interaction) => {
                     ticket.threadId = thread.id;
                     ticket.ownerId = interaction.user.id;
 
-                    await ticketRepository.save(ticket);
-                    const openTickets = await ticketRepository.find({
-                        where: { status: "Open" },
-                    });
+                    console.log('Ticket object before saving:', ticket);
 
-                    const openTicketCount = openTickets.length;
+                    try {
+                        await ticketRepository.save(ticket);
+                        const openTickets = await ticketRepository.find({
+                            where: { status: "Open" },
+                        });
 
-                    bot.user?.setPresence({
-                        activities: [{ name: `${openTicketCount} open tickets`, type: ActivityType.Watching }],
-                        status: "dnd",
-                    });
-                    log('> BOT: Ticket created.', 'log');
-                    log(`>  TICKET: ${ticket.id}/${ticket.threadId}`, 'log');
-                    log(`>  STATUS: ${ticket.status}`, 'log');
-                    log(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
-                    checkOpenTickets();
-                    await interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
+                        const openTicketCount = openTickets.length;
+
+                        bot.user?.setPresence({
+                            activities: [{ name: `${openTicketCount} open tickets`, type: ActivityType.Watching }],
+                            status: "dnd",
+                        });
+                        log('> BOT: Ticket created.', 'log');
+                        log(`>  TICKET: ${ticket.id}/${ticket.threadId}`, 'log');
+                        log(`>  STATUS: ${ticket.status}`, 'log');
+                        log(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
+                        checkOpenTickets();
+                        await interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
+                    } catch (error) {
+                        console.error('Error creating ticket:', error);
+                        await interaction.reply({ content: 'There was an error creating the ticket. Please try again later.', ephemeral: true });
+                    }
                 }
             } catch (error) {
                 console.error('Error creating ticket thread:', error);
