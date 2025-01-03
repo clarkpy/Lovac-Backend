@@ -97,6 +97,10 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
             res.status(403).json({ error: "Brrr! It looks like this staff member is not recognized in our winter wonderland." });
             return;
         }
+        if (!mongodb_1.ObjectId.isValid(ticketId)) {
+            res.status(400).json({ error: "Invalid ticket ID format." });
+            return;
+        }
         const ticket = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({
             where: { _id: new mongodb_1.ObjectId(ticketId) },
             relations: ["messages"]
@@ -120,6 +124,10 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
 router.delete('/messages/:messageId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { messageId } = req.params;
     try {
+        if (!mongodb_1.ObjectId.isValid(messageId)) {
+            res.status(400).json({ error: "Invalid message ID format." });
+            return;
+        }
         const message = yield data_source_1.AppDataSource.getMongoRepository(Message_1.Message).findOne({
             where: { _id: new mongodb_1.ObjectId(messageId) }
         });

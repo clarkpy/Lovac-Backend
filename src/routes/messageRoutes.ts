@@ -3,7 +3,7 @@ import { AppDataSource } from '../data-source';
 import { Message } from '../models/Message';
 import { Ticket } from '../models/Ticket';
 import axios from 'axios';
-import { EmbedBuilder, TextChannel, PermissionsBitField } from 'discord.js';
+import { EmbedBuilder, TextChannel } from 'discord.js';
 import { bot } from '../discord-bot';
 import dotenv from 'dotenv';
 import log from '../logger';
@@ -84,11 +84,9 @@ router.post('/new-message', async (req: Request, res: Response) => {
 });
 
 router.post('/messages', async (req: Request, res: Response) => {
-
     const { ticketId, staffId } = req.body;
 
     try {
-
         console.log(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`);
 
         if (!staffId) {
@@ -102,6 +100,11 @@ router.post('/messages', async (req: Request, res: Response) => {
 
         if (staffCheckResponse.status !== 200) {
             res.status(403).json({ error: "Brrr! It looks like this staff member is not recognized in our winter wonderland." });
+            return;
+        }
+
+        if (!ObjectId.isValid(ticketId)) {
+            res.status(400).json({ error: "Invalid ticket ID format." });
             return;
         }
 
@@ -131,6 +134,11 @@ router.delete('/messages/:messageId', async (req: Request, res: Response) => {
     const { messageId } = req.params;
 
     try {
+        if (!ObjectId.isValid(messageId)) {
+            res.status(400).json({ error: "Invalid message ID format." });
+            return;
+        }
+
         const message = await AppDataSource.getMongoRepository(Message).findOne({
             where: { _id: new ObjectId(messageId) }
         });
