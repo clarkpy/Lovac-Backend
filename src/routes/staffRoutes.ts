@@ -3,6 +3,7 @@ import { AppDataSource } from "../data-source";
 import { Staff } from "../models/Staff";
 import dotenv from "dotenv";
 import log from "../logger";
+import { ObjectId } from "mongodb";
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.post("/check-staff", async (req, res) => {
     }
 
     const query: any = {};
-    if (staffId) query.id = Number(staffId);
+    if (staffId) query._id = new ObjectId(staffId);
     if (discordId) query.discordId = discordId;
     if (discordUsername) query.discordUsername = discordUsername;
 

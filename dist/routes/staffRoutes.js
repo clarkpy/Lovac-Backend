@@ -17,6 +17,7 @@ const data_source_1 = require("../data-source");
 const Staff_1 = require("../models/Staff");
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("../logger"));
+const mongodb_1 = require("mongodb");
 const router = (0, express_1.Router)();
 dotenv_1.default.config();
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -31,7 +32,7 @@ router.post("/check-staff", (req, res) => __awaiter(void 0, void 0, void 0, func
     }
     const query = {};
     if (staffId)
-        query.id = Number(staffId);
+        query._id = new mongodb_1.ObjectId(staffId);
     if (discordId)
         query.discordId = discordId;
     if (discordUsername)
