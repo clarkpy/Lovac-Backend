@@ -97,7 +97,7 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
         (0, logger_1.default)(`Fetching messages for ticket ID: ${ticketId}`, "warning");
         const dbMessages = yield data_source_1.AppDataSource.manager.find(Message_1.Message, {
             where: { ticket: { id: Number(ticketId) } },
-            order: { date: 'ASC' }
+            order: { createdAt: 'ASC' }
         });
         (0, logger_1.default)(`Database messages fetched: ${dbMessages.length}`, "warning");
         dbMessages.forEach((msg, index) => {

@@ -101,7 +101,7 @@ router.post('/messages', async (req: Request, res: Response) => {
 
         const dbMessages = await AppDataSource.manager.find(Message, {
             where: { ticket: { id: Number(ticketId) } },
-            order: { date: 'ASC' }
+            order: { createdAt: 'ASC' }
         });
 
         log(`Database messages fetched: ${dbMessages.length}`, "warning");
