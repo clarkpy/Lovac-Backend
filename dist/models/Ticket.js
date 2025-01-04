@@ -41,7 +41,7 @@ __decorate([
     __metadata("design:type", String)
 ], Ticket.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => Message_1.Message, (message) => message.ticket),
+    (0, typeorm_1.OneToMany)(() => Message_1.Message, (message) => message.ticketId),
     __metadata("design:type", Array)
 ], Ticket.prototype, "messages", void 0);
 __decorate([

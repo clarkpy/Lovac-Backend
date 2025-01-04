@@ -22,7 +22,7 @@ export class Ticket {
     @Column()
     status!: string;
 
-    @OneToMany(() => Message, (message) => message.ticket)
+    @OneToMany(() => Message, (message) => message.ticketId)
     messages!: Message[];
 
     @Column("simple-array")
