@@ -94,7 +94,7 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
             res.status(400).json({ error: "Meow! It seems like you're missing some details for your message request!" });
             return;
         }
-        (0, logger_1.default)('Fetching messages for ticket ID:', ticketId);
+        (0, logger_1.default)(`Fetching messages for ticket ID: ${ticketId}`, "warning");
         const dbMessages = yield data_source_1.AppDataSource.manager.find(Message_1.Message, {
             where: { ticket: { id: Number(ticketId) } },
             order: { date: 'ASC' }
