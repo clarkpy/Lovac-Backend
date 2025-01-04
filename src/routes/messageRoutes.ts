@@ -3,7 +3,7 @@ import { AppDataSource } from '../data-source';
 import { Message } from '../models/Message';
 import { Ticket } from '../models/Ticket';
 import axios from 'axios';
-import { EmbedBuilder, TextChannel } from 'discord.js';
+import { EmbedBuilder, TextChannel, PermissionsBitField } from 'discord.js';
 import { bot } from '../discord-bot';
 import dotenv from 'dotenv';
 import log from '../logger';
@@ -34,98 +34,130 @@ router.post('/new-message', async (req: Request, res: Response) => {
         const staffData = staffCheckResponse.data;
         const discordId = staffData.discordId;
 
-        const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
-            where: { id: ticketId }
+        const ticket = await AppDataSource.manager.findOne(Ticket, {
+            where: { id: Number(ticketId) },
         });
 
         if (!ticket) {
-            res.status(404).json({ error: "The ticket you're trying to message does not exist." });
+            res.status(404).json({ error: 'Paws and whiskers! This ticket seems to have vanished into the landscape!' });
             return;
         }
 
-        const newMessage = new Message();
-        newMessage.author = staffId;
-        newMessage.username = staffData.discordUsername;
-        newMessage.message = body;
-        newMessage.isStaff = true;
-        newMessage.isAdmin = staffData.isAdmin;
-        newMessage.date = new Date();
-        newMessage.authorAvatar = staffData.discordAvatar;
-        newMessage.createdAt = Date.now();
-        newMessage.ticket = ticket;
-        newMessage.staffRole = staffData.discordRole;
+        const message = new Message();
+        message.author = staffData.discordId;
+        message.username = staffData.discordDisplayName;
+        message.message = body;
+        message.isStaff = true;
+        message.isAdmin = false;
+        message.date = new Date();
+        message.authorAvatar = staffData.discordAvatar;
+        message.createdAt = Date.now();
+        message.ticket = ticket;
+        message.staffRole = staffData.discordRole;
 
-        await AppDataSource.getMongoRepository(Message).save(newMessage);
+        await AppDataSource.manager.save(message);
 
-        ticket.messages.push(newMessage);
-        await AppDataSource.getMongoRepository(Ticket).save(ticket);
+        const embed = new EmbedBuilder()
+            .setColor('#0099ff')
+            .setTitle('New Message')
+            .setDescription(body)
+            .setAuthor({ name: staffData.discordDisplayName, iconURL: staffData.discordAvatar })
+            .setFooter({ text: 'Lovac', iconURL: bot.user?.displayAvatarURL() })
+            .setTimestamp();
 
-        const channel = await bot.channels.fetch(ticket.threadId) as TextChannel;
-        if (channel) {
-            const embed = new EmbedBuilder()
-                .setColor('#0099ff')
-                .setAuthor({ name: staffData.discordUsername, iconURL: staffData.discordAvatar })
-                .setDescription(body)
-                .setTimestamp();
+        const threadId = ticket.threadId;
 
-            await channel.send({ embeds: [embed] });
+        if (!threadId) {
+            res.status(400).json({ error: "Meow! It seems like you're missing some details for your message request!" });
+            return;
         }
 
-        res.status(200).json({ message: "Message sent successfully." });
+        const channel = await bot.channels.fetch(threadId);
+        if (channel && channel.isTextBased()) {
+            await (channel as TextChannel).send({ embeds: [embed] });
+        }
+
+        res.status(201).json({ successMessage: 'Message created successfully.', createdMessage: message });
     } catch (error) {
         log('=================================================================================================', 'error');
         log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
         log('', 'error');
-        log("Error sending message:", "error");
+        log("Error creating message:", "error");
         log(`${error}`, "error");
         log('=================================================================================================', 'error');
-        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+        res.status(500).json({ error: "Oh no! A flurry of problems has caused a little chaos in our cozy corner!" });
     }
 });
 
 router.post('/messages', async (req: Request, res: Response) => {
-    const { ticketId, staffId } = req.body;
-
     try {
+        const { ticketId } = req.body;
 
-        if (!staffId) {
-            res.status(400).json({ error: "Staff ID is required to fetch messages." });
+        if (!ticketId) {
+            res.status(400).json({ error: "Meow! It seems like you're missing some details for your message request!" });
             return;
         }
 
-        const staffCheckResponse = await axios.post(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
-            staffId: staffId
+        const dbMessages = await AppDataSource.manager.find(Message, {
+            where: { ticket: { id: Number(ticketId) } },
+            order: { date: 'ASC' }
         });
 
-        if (staffCheckResponse.status !== 200) {
-            res.status(403).json({ error: "Brrr! It looks like this staff member is not recognized in our winter wonderland." });
+        const ticket = await AppDataSource.manager.findOne(Ticket, { where: { id: Number(ticketId) } });
+
+        if (!ticket || !ticket.threadId) {
+            res.status(400).json({ error: "Meow! It seems like you're missing some details for your message request!" });
             return;
         }
 
-        if (!ObjectId.isValid(ticketId)) {
-            res.status(400).json({ error: "Invalid ticket ID format." });
-            return;
+        try {
+            const channel = await bot.channels.fetch(ticket.threadId);
+
+            let discordMessages: { 
+                id: string; 
+                author: string;
+                username: string;
+                message: string;
+                isStaff: boolean;
+                isAdmin: boolean;
+                date: Date;
+                authorAvatar: string;
+                createdAt: number;
+                staffRole: string
+            }[] = [];
+
+            if (channel && channel.isTextBased()) {
+                const messages = await (channel as TextChannel).messages.fetch({ limit: 100 });
+
+                discordMessages = await Promise.all(messages.filter(msg => !msg.author.bot).map(async msg => {
+                    const member = msg.member;
+                    
+                    const isStaff = member?.roles.cache.some((role) => role.name === "Ticket Staff") || false;
+                    const isAdmin = member?.permissions.has(PermissionsBitField.Flags.Administrator) || false;
+                    
+                    return {
+                        id: msg.id,
+                        author: msg.author.id,
+                        username: msg.author.username,
+                        message: msg.content,
+                        isStaff,
+                        isAdmin,
+                        date: msg.createdAt,
+                        authorAvatar: msg.author.displayAvatarURL(),
+                        createdAt: msg.createdTimestamp,
+                        staffRole: ""
+                    };
+                }));
+            }
+
+            const allMessages = [...dbMessages, ...discordMessages].sort((a, b) => a.createdAt - b.createdAt);
+
+            res.status(200).json(allMessages);
+        } catch (discordError) {
+            res.status(200).json(dbMessages);
         }
-
-        const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
-            where: { id: ticketId },
-            relations: ["messages"]
-        });
-
-        if (!ticket) {
-            res.status(404).json({ error: "The ticket you're trying to fetch messages for does not exist." });
-            return;
-        }
-
-        res.json(ticket.messages);
     } catch (error) {
-        log('=================================================================================================', 'error');
-        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
-        log('', 'error');
-        log("Error fetching messages:", "error");
-        log(`${error}`, "error");
-        log('=================================================================================================', 'error');
-        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+        res.status(500).json({ error: "Oh no! A flurry of problems has caused a little chaos in our cozy corner!" });
     }
 });
 
