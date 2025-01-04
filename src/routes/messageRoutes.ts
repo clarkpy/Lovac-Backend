@@ -97,7 +97,7 @@ router.post('/messages', async (req: Request, res: Response) => {
             return;
         }
 
-        log(`Fetching messages for ticket ID: ${ticketId}`, "warning");
+        log('Fetching messages for ticket ID:', ticketId);
 
         const dbMessages = await AppDataSource.manager.find(Message, {
             where: { ticket: { id: Number(ticketId) } },
