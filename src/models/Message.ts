@@ -1,5 +1,4 @@
-import { Entity, ObjectIdColumn, ObjectId, Column, ManyToOne } from "typeorm";
-import { Ticket } from "./Ticket";
+import { Entity, ObjectIdColumn, ObjectId, Column } from "typeorm";
 
 @Entity()
 export class Message {
@@ -30,8 +29,8 @@ export class Message {
     @Column()
     createdAt!: number;
 
-    @ManyToOne(() => Ticket, (ticket) => ticket.messages, { nullable: true })
-    ticket!: Ticket | null;
+    @Column()
+    ticketId!: number;
 
     @Column()
     staffRole!: string;
