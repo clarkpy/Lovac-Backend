@@ -51,7 +51,7 @@ router.post('/new-message', async (req: Request, res: Response) => {
         message.date = new Date();
         message.authorAvatar = staffData.discordAvatar;
         message.createdAt = Date.now();
-        message.ticket = ticket;
+        message.ticketId = ticket.id;
         message.staffRole = staffData.discordRole;
 
         await AppDataSource.manager.save(message);
@@ -100,7 +100,7 @@ router.post('/messages', async (req: Request, res: Response) => {
         log(`Fetching messages for ticket ID: ${ticketId}`, "warning");
 
         const dbMessages = await AppDataSource.manager.find(Message, {
-            where: { ticket: { id: Number(ticketId) } },
+            where: { ticketId: Number(ticketId) },
             order: { createdAt: 'ASC' }
         });
 

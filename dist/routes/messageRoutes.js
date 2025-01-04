@@ -56,7 +56,7 @@ router.post('/new-message', (req, res) => __awaiter(void 0, void 0, void 0, func
         message.date = new Date();
         message.authorAvatar = staffData.discordAvatar;
         message.createdAt = Date.now();
-        message.ticket = ticket;
+        message.ticketId = ticket.id;
         message.staffRole = staffData.discordRole;
         yield data_source_1.AppDataSource.manager.save(message);
         const embed = new discord_js_1.EmbedBuilder()
@@ -96,7 +96,7 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
         }
         (0, logger_1.default)(`Fetching messages for ticket ID: ${ticketId}`, "warning");
         const dbMessages = yield data_source_1.AppDataSource.manager.find(Message_1.Message, {
-            where: { ticket: { id: Number(ticketId) } },
+            where: { ticketId: Number(ticketId) },
             order: { createdAt: 'ASC' }
         });
         (0, logger_1.default)(`Database messages fetched: ${dbMessages.length}`, "warning");
