@@ -7,7 +7,6 @@ import { EmbedBuilder, TextChannel, PermissionsBitField } from 'discord.js';
 import { bot } from '../discord-bot';
 import dotenv from 'dotenv';
 import log from '../logger';
-import { ObjectId } from 'mongodb';
 
 dotenv.config();
 
@@ -98,9 +97,16 @@ router.post('/messages', async (req: Request, res: Response) => {
             return;
         }
 
+        log('Fetching messages for ticket ID:', ticketId);
+
         const dbMessages = await AppDataSource.manager.find(Message, {
             where: { ticket: { id: Number(ticketId) } },
             order: { date: 'ASC' }
+        });
+
+        log(`Database messages fetched: ${dbMessages.length}`, "warning");
+        dbMessages.forEach((msg, index) => {
+            log(`Message ${index + 1}: ${JSON.stringify(msg)}`, "warning");
         });
 
         const ticket = await AppDataSource.manager.findOne(Ticket, { where: { id: Number(ticketId) } });
@@ -157,39 +163,8 @@ router.post('/messages', async (req: Request, res: Response) => {
             res.status(200).json(dbMessages);
         }
     } catch (error) {
+        log(`Error fetching messages: ${error}`, "error");
         res.status(500).json({ error: "Oh no! A flurry of problems has caused a little chaos in our cozy corner!" });
-    }
-});
-
-router.delete('/messages/:messageId', async (req: Request, res: Response) => {
-    const { messageId } = req.params;
-
-    try {
-        if (!ObjectId.isValid(messageId)) {
-            res.status(400).json({ error: "Invalid message ID format." });
-            return;
-        }
-
-        const message = await AppDataSource.getMongoRepository(Message).findOne({
-            where: { id: messageId }
-        });
-
-        if (!message) {
-            res.status(404).json({ error: "The message you're trying to delete does not exist." });
-            return;
-        }
-
-        await AppDataSource.getMongoRepository(Message).remove(message);
-
-        res.status(200).json({ message: "Message deleted successfully." });
-    } catch (error) {
-        log('=================================================================================================', 'error');
-        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
-        log('', 'error');
-        log("Error deleting message:", "error");
-        log(`${error}`, "error");
-        log('=================================================================================================', 'error');
-        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 });
 

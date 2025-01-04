@@ -21,7 +21,6 @@ const discord_js_1 = require("discord.js");
 const discord_bot_1 = require("../discord-bot");
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("../logger"));
-const mongodb_1 = require("mongodb");
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 router.post('/new-message', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -95,9 +94,14 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
             res.status(400).json({ error: "Meow! It seems like you're missing some details for your message request!" });
             return;
         }
+        (0, logger_1.default)('Fetching messages for ticket ID:', ticketId);
         const dbMessages = yield data_source_1.AppDataSource.manager.find(Message_1.Message, {
             where: { ticket: { id: Number(ticketId) } },
             order: { date: 'ASC' }
+        });
+        (0, logger_1.default)(`Database messages fetched: ${dbMessages.length}`, "warning");
+        dbMessages.forEach((msg, index) => {
+            (0, logger_1.default)(`Message ${index + 1}: ${JSON.stringify(msg)}`, "warning");
         });
         const ticket = yield data_source_1.AppDataSource.manager.findOne(Ticket_1.Ticket, { where: { id: Number(ticketId) } });
         if (!ticket || !ticket.threadId) {
@@ -135,34 +139,8 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
         }
     }
     catch (error) {
+        (0, logger_1.default)(`Error fetching messages: ${error}`, "error");
         res.status(500).json({ error: "Oh no! A flurry of problems has caused a little chaos in our cozy corner!" });
-    }
-}));
-router.delete('/messages/:messageId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { messageId } = req.params;
-    try {
-        if (!mongodb_1.ObjectId.isValid(messageId)) {
-            res.status(400).json({ error: "Invalid message ID format." });
-            return;
-        }
-        const message = yield data_source_1.AppDataSource.getMongoRepository(Message_1.Message).findOne({
-            where: { id: messageId }
-        });
-        if (!message) {
-            res.status(404).json({ error: "The message you're trying to delete does not exist." });
-            return;
-        }
-        yield data_source_1.AppDataSource.getMongoRepository(Message_1.Message).remove(message);
-        res.status(200).json({ message: "Message deleted successfully." });
-    }
-    catch (error) {
-        (0, logger_1.default)('=================================================================================================', 'error');
-        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
-        (0, logger_1.default)('', 'error');
-        (0, logger_1.default)("Error deleting message:", "error");
-        (0, logger_1.default)(`${error}`, "error");
-        (0, logger_1.default)('=================================================================================================', 'error');
-        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
 exports.default = router;
