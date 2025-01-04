@@ -97,7 +97,7 @@ router.post('/messages', async (req: Request, res: Response) => {
             return;
         }
 
-        log('Fetching messages for ticket ID:', ticketId);
+        log(`Fetching messages for ticket ID: ${ticketId}`, "warning");
 
         const dbMessages = await AppDataSource.manager.find(Message, {
             where: { ticket: { id: Number(ticketId) } },
@@ -160,6 +160,7 @@ router.post('/messages', async (req: Request, res: Response) => {
 
             res.status(200).json(allMessages);
         } catch (discordError) {
+            log(`Discord error: ${discordError}`, "error");
             res.status(200).json(dbMessages);
         }
     } catch (error) {
