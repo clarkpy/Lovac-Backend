@@ -10,6 +10,7 @@ import messageRoutes from "./routes/messageRoutes";
 import teamRoutes from "./routes/teamRoutes";
 import auth from "./auth";
 import closeTicketRoutes from "./routes/closeTicketRoutes";
+import route from "./routes/route";
 import dotenv from "dotenv";
 import log from "./logger";
 
@@ -35,7 +36,7 @@ app.use(auth);
 log("Authentication routes registered.", "success");
 
 log("Registering API routes...", "log");
-app.use("/", ticketRoutes);
+app.use("/", ticketRoutes, route);
 app.use("/tags", tagRoutes);
 app.use("/staff", staffRoutes);
 app.use("/categories", categoryRoutes);
