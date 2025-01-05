@@ -1,10 +1,4 @@
 "use strict";
-// [@] Features:
-// format /close-request <optional: reason>
-// Checks if the command is being used in a ticket channel (a thread)
-// Checks if the user running the command is the assignee of the ticket by using the check-staff route in the backend
-// If the user is the assignee, the command will send a close request to the backend route.
-// If the user is not the assignee, the command will send a message to the ticket channel to let the assignee know that the request has been sent.
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {

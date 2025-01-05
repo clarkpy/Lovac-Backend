@@ -82,16 +82,15 @@ router.post("/close-ticket", async (req: Request<{}, {}, { staffId: string; tick
 
 router.post("/force-close-ticket", async (req: Request<{}, {}, { staffId: string; staffUsername: string; ticketId: string; reason: string }>, res: Response): Promise<void> => {
     try {
-      const { staffId, staffUsername, ticketId, reason } = req.body;
+      const { staffId, ticketId, reason } = req.body;
 
-      if (!staffId || !staffUsername || !ticketId) {
+      if (!staffId || !ticketId) {
         res.status(400).json({ error: "Meow, it looks like some cat-tastic details are missing from your request!" });
         return;
       }
 
       const staffCheckResponse = await axios.post(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
-        staffId: staffId,
-        discordUsername: staffUsername
+        staffId: staffId
       });
 
       if (staffCheckResponse.status !== 200) {

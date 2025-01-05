@@ -77,14 +77,13 @@ router.post("/close-ticket", (req, res) => __awaiter(void 0, void 0, void 0, fun
 }));
 router.post("/force-close-ticket", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { staffId, staffUsername, ticketId, reason } = req.body;
-        if (!staffId || !staffUsername || !ticketId) {
+        const { staffId, ticketId, reason } = req.body;
+        if (!staffId || !ticketId) {
             res.status(400).json({ error: "Meow, it looks like some cat-tastic details are missing from your request!" });
             return;
         }
         const staffCheckResponse = yield axios_1.default.post(`${process.env.LOVAC_BACKEND_URL}/staff/check-staff`, {
-            staffId: staffId,
-            discordUsername: staffUsername
+            staffId: staffId
         });
         if (staffCheckResponse.status !== 200) {
             res.status(403).json({ error: "Brrr! It seems like this staff member is not purr-fectly recognized in our winter wonderland." });
