@@ -52,8 +52,8 @@ router.post("/apply-tag", async (req: Request, res: Response) => {
             return;
         }
 
-        if (!ticket.tags.includes(tag.id.toString())) {
-            ticket.tags.push(tag.id.toString());
+        if (!ticket.tags.includes(tag._id.toString())) {
+            ticket.tags.push(tag._id.toString());
         }
 
         await AppDataSource.getMongoRepository(Ticket).save(ticket);
@@ -78,8 +78,8 @@ router.post("/remove-tag", async (req, res) => {
         return;
     }
 
-    const tag = await AppDataSource.manager.findOne(Tag, {
-        where: { id: new ObjectId(tagId) },
+    const tag = await AppDataSource.getMongoRepository(Tag).findOne({
+        where: { _id: new ObjectId(tagId) },
     });
 
     if (!tag) {
@@ -88,7 +88,7 @@ router.post("/remove-tag", async (req, res) => {
     }
 
     
-    const ticket = await AppDataSource.manager.findOne(Ticket, {
+    const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
         where: { id: Number(ticketId) },
     });
 
@@ -97,11 +97,11 @@ router.post("/remove-tag", async (req, res) => {
         return;
     }
 
-    if (ticket.tags.includes(tag.id.toString())) {
-        ticket.tags = ticket.tags.filter((id) => id !== tag.id.toString());
+    if (ticket.tags.includes(tag._id.toString())) {
+        ticket.tags = ticket.tags.filter((id) => id !== tag._id.toString());
     }
 
-    await AppDataSource.manager.save(ticket);
+    await AppDataSource.getMongoRepository(Ticket).save(ticket);
     res.json({ success: true, ticket, tagColor: tag.tagColor, tagIcon: tag.tagIcon });
 });
 
