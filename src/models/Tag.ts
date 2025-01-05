@@ -3,7 +3,7 @@ import { Entity, ObjectIdColumn, ObjectId, Column } from "typeorm";
 @Entity()
 export class Tag {
     @ObjectIdColumn()
-    id!: ObjectId;
+    _id!: ObjectId;
 
     @Column()
     tagShort!: string;

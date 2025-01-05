@@ -17,7 +17,7 @@ exports.Tag = Tag;
 __decorate([
     (0, typeorm_1.ObjectIdColumn)(),
     __metadata("design:type", typeorm_1.ObjectId)
-], Tag.prototype, "id", void 0);
+], Tag.prototype, "_id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
