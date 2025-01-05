@@ -30,10 +30,12 @@ const commands = [
         name: 'sendpanel',
         description: 'Send a panel to create a ticket',
     },
+    
     {
         name: 'unassign',
         description: 'Unassign yourself from the current ticket',
     },
+
     new SlashCommandBuilder()
     .setName('blacklist')
     .setDescription('Blacklist a user')
@@ -48,6 +50,20 @@ const commands = [
     .addUserOption(option => option.setName('user')
     .setDescription('The user to get insight on')
     .setRequired(true)),
+
+    new SlashCommandBuilder()
+    .setName('close-request')
+    .setDescription('Close a ticket')
+    .addUserOption(option => option.setName('reason')
+    .setDescription('The reason for closing the ticket.')
+    .setRequired(false)),
+
+    new SlashCommandBuilder()
+    .setName('force-close')
+    .setDescription('Force close a ticket')
+    .addUserOption(option => option.setName('reason')
+    .setDescription('The reason for closing the ticket.')
+    .setRequired(false)),
 ];
 
 const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_BOT_TOKEN || '');

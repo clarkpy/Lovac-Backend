@@ -55,6 +55,18 @@ const commands = [
         .addUserOption(option => option.setName('user')
         .setDescription('The user to get insight on')
         .setRequired(true)),
+    new discord_js_1.SlashCommandBuilder()
+        .setName('close-request')
+        .setDescription('Close a ticket')
+        .addUserOption(option => option.setName('reason')
+        .setDescription('The reason for closing the ticket.')
+        .setRequired(false)),
+    new discord_js_1.SlashCommandBuilder()
+        .setName('force-close')
+        .setDescription('Force close a ticket')
+        .addUserOption(option => option.setName('reason')
+        .setDescription('The reason for closing the ticket.')
+        .setRequired(false)),
 ];
 const rest = new discord_js_1.REST({ version: '9' }).setToken(process.env.DISCORD_BOT_TOKEN || '');
 exports.bot.login(process.env.DISCORD_BOT_TOKEN).then(() => {
