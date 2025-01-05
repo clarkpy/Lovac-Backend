@@ -206,6 +206,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                     const thread = yield ((_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.channels.fetch(ticket.threadId));
                     if (thread) {
                         yield thread.setLocked(true);
+                        yield thread.setArchived(true);
                     }
                 }
                 if (ticket) {

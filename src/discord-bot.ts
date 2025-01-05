@@ -227,6 +227,7 @@ bot.on("interactionCreate", async (interaction) => {
                     const thread = await interaction.guild?.channels.fetch(ticket.threadId) as ThreadChannel;
                     if (thread) {
                         await thread.setLocked(true);
+                        await thread.setArchived(true);
                     }
                 }
 
