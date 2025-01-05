@@ -36,6 +36,33 @@ router.get("/tags", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
     }
 }));
+router.post("/get-tag", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { tagId } = req.body;
+    if (!tagId) {
+        res.status(400).json({ error: "It seems some details are missing from your request, like a cat searching for its favorite toy." });
+        return;
+    }
+    try {
+        const tag = yield data_source_1.AppDataSource.getMongoRepository(Tag_1.Tag).findOne({
+            where: { _id: new mongodb_1.ObjectId(tagId) },
+            select: ["tagShort", "tagLong"]
+        });
+        if (!tag) {
+            res.status(404).json({ error: "This tag seems to have slipped away, just like a curious cat!" });
+            return;
+        }
+        res.json({ tagShort: tag.tagShort, tagLong: tag.tagLong });
+    }
+    catch (error) {
+        (0, logger_1.default)('=================================================================================================', 'error');
+        (0, logger_1.default)('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        (0, logger_1.default)('', 'error');
+        (0, logger_1.default)("Error fetching tag by id:", "error");
+        (0, logger_1.default)(`${error}`, "error");
+        (0, logger_1.default)('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+}));
 router.post("/apply-tag", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { tagId, ticketId } = req.body;
     if (!tagId || !ticketId) {

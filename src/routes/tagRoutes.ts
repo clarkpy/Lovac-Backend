@@ -25,6 +25,37 @@ router.get("/tags", async (req: Request, res: Response) => {
     }
 });
 
+router.post("/get-tag", async (req: Request, res: Response) => {
+    const { tagId } = req.body;
+
+    if (!tagId) {
+        res.status(400).json({ error: "It seems some details are missing from your request, like a cat searching for its favorite toy." });
+        return;
+    }
+
+    try {
+        const tag = await AppDataSource.getMongoRepository(Tag).findOne({
+            where: { _id: new ObjectId(tagId) },
+            select: ["tagShort", "tagLong"]
+        });
+
+        if (!tag) {
+            res.status(404).json({ error: "This tag seems to have slipped away, just like a curious cat!" });
+            return;
+        }
+
+        res.json({ tagShort: tag.tagShort, tagLong: tag.tagLong });
+    } catch (error) {
+        log('=================================================================================================', 'error');
+        log('Lovac ran into an issue, contact the developer (https://snowy.codes) for assistance.', 'error');
+        log('', 'error');
+        log("Error fetching tag by id:", "error");
+        log(`${error}`, "error");
+        log('=================================================================================================', 'error');
+        res.status(500).json({ error: "An unexpected issue has occurred; please try again later." });
+    }
+});
+
 router.post("/apply-tag", async (req: Request, res: Response) => {
     const { tagId, ticketId } = req.body;
 
