@@ -20,24 +20,24 @@ const router = (0, express_1.Router)();
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const start = perf_hooks_1.performance.now();
     const discordPingStart = perf_hooks_1.performance.now();
+    let discordPing = null;
     try {
         yield axios_1.default.get("https://discord.com/api/v9", {
             headers: {
                 Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`
             }
         });
+        const discordPingEnd = perf_hooks_1.performance.now();
+        discordPing = discordPingEnd - discordPingStart;
     }
     catch (error) {
-        res.status(500).send("Failed to ping Discord API");
-        return;
+        console.error("Couldn't reach the discord API:", error);
     }
-    const discordPingEnd = perf_hooks_1.performance.now();
-    const discordPing = discordPingEnd - discordPingStart;
     const serverPing = perf_hooks_1.performance.now() - start;
     const memoryUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
     res.json({
-        discordPing: `${discordPing.toFixed(2)} ms`,
+        discordPing: discordPing !== null ? `${discordPing.toFixed(2)} ms` : "Failed to fetch",
         serverPing: `${serverPing.toFixed(2)} ms`,
         memoryUsage: {
             rss: `${(memoryUsage.rss / 1024 / 1024).toFixed(2)} MB`,
