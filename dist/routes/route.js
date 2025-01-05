@@ -21,7 +21,11 @@ router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const start = perf_hooks_1.performance.now();
     const discordPingStart = perf_hooks_1.performance.now();
     try {
-        yield axios_1.default.get("https://discord.com/api/v9");
+        yield axios_1.default.get("https://discord.com/api/v9", {
+            headers: {
+                Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`
+            }
+        });
     }
     catch (error) {
         res.status(500).send("Failed to ping Discord API");
