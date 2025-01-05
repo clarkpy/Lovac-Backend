@@ -97,18 +97,10 @@ router.post('/messages', async (req: Request, res: Response) => {
             return;
         }
 
-        log(`Fetching messages for ticket ID: ${ticketId}`, "warning");
-
         const dbMessages = await AppDataSource.manager.find(Message, {
             where: { ticketId: Number(ticketId) },
             order: { createdAt: 'ASC' }
         });
-
-        log(`Database messages fetched: ${dbMessages.length}`, "warning");
-        dbMessages.forEach((msg, index) => {
-            log(`Message ${index + 1}: ${JSON.stringify(msg)}`, "warning");
-        });
-
         const ticket = await AppDataSource.manager.findOne(Ticket, { where: { id: Number(ticketId) } });
 
         if (!ticket || !ticket.threadId) {

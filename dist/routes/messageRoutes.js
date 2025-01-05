@@ -94,14 +94,9 @@ router.post('/messages', (req, res) => __awaiter(void 0, void 0, void 0, functio
             res.status(400).json({ error: "Meow! It seems like you're missing some details for your message request!" });
             return;
         }
-        (0, logger_1.default)(`Fetching messages for ticket ID: ${ticketId}`, "warning");
         const dbMessages = yield data_source_1.AppDataSource.manager.find(Message_1.Message, {
             where: { ticketId: Number(ticketId) },
             order: { createdAt: 'ASC' }
-        });
-        (0, logger_1.default)(`Database messages fetched: ${dbMessages.length}`, "warning");
-        dbMessages.forEach((msg, index) => {
-            (0, logger_1.default)(`Message ${index + 1}: ${JSON.stringify(msg)}`, "warning");
         });
         const ticket = yield data_source_1.AppDataSource.manager.findOne(Ticket_1.Ticket, { where: { id: Number(ticketId) } });
         if (!ticket || !ticket.threadId) {
