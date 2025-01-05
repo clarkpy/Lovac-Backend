@@ -20,7 +20,6 @@ const discord_bot_1 = require("../discord-bot");
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = __importDefault(require("../logger"));
-const mongodb_1 = require("mongodb");
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 router.post("/close-ticket", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -95,7 +94,7 @@ router.post("/force-close-ticket", (req, res) => __awaiter(void 0, void 0, void 
             return;
         }
         const ticket = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({
-            where: { _id: new mongodb_1.ObjectId(ticketId) },
+            where: { id: Number(ticketId) },
         });
         if (!ticket) {
             res.status(404).json({ error: "Purr-haps this ticket has been swept away by the snowy winds?" });

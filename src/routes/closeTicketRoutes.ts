@@ -106,7 +106,7 @@ router.post("/force-close-ticket", async (req: Request<{}, {}, { staffId: string
       }
 
       const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
-        where: { _id: new ObjectId(ticketId) },
+        where: { id: Number(ticketId) },
       });
 
       if (!ticket) {
