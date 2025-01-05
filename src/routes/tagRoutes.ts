@@ -44,7 +44,7 @@ router.post("/apply-tag", async (req: Request, res: Response) => {
         }
 
         const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
-            where: { _id: new ObjectId(ticketId) },
+            where: { id: new Number(ticketId) },
         });
 
         if (!ticket) {
@@ -89,7 +89,7 @@ router.post("/remove-tag", async (req, res) => {
 
     
     const ticket = await AppDataSource.manager.findOne(Ticket, {
-        where: { id: ticketId },
+        where: { id: Number(ticketId) },
     });
 
     if (!ticket) {
