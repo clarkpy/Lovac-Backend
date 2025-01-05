@@ -44,7 +44,7 @@ router.post("/apply-tag", async (req: Request, res: Response) => {
         }
 
         const ticket = await AppDataSource.getMongoRepository(Ticket).findOne({
-            where: { id: new Number(ticketId) },
+            where: { id: Number(ticketId) },
         });
 
         if (!ticket) {

@@ -51,7 +51,7 @@ router.post("/apply-tag", (req, res) => __awaiter(void 0, void 0, void 0, functi
             return;
         }
         const ticket = yield data_source_1.AppDataSource.getMongoRepository(Ticket_1.Ticket).findOne({
-            where: { id: new Number(ticketId) },
+            where: { id: Number(ticketId) },
         });
         if (!ticket) {
             res.status(404).json({ error: "This ticket appears to be hiding; we can't find it anywhere!" });
