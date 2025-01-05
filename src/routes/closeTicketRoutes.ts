@@ -12,12 +12,7 @@ dotenv.config();
 
 const router = Router();
 
-router.post(
-  "/close-ticket",
-  async (
-    req: Request<{}, {}, { staffId: string; ticketId: string }>,
-    res: Response
-  ): Promise<void> => {
+router.post("/close-ticket", async (req: Request<{}, {}, { staffId: string; ticketId: string }>, res: Response): Promise<void> => {
     try {
       const { staffId, ticketId } = req.body;
 
@@ -85,12 +80,7 @@ router.post(
   }
 );
 
-router.post(
-  "/force-close-ticket",
-  async (
-    req: Request<{}, {}, { staffId: string; staffUsername: string; ticketId: string; reason: string }>,
-    res: Response
-  ): Promise<void> => {
+router.post("/force-close-ticket", async (req: Request<{}, {}, { staffId: string; staffUsername: string; ticketId: string; reason: string }>, res: Response): Promise<void> => {
     try {
       const { staffId, staffUsername, ticketId, reason } = req.body;
 
