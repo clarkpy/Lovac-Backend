@@ -217,7 +217,11 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
             }), 5000);
         }
         else if (action === "denyClose") {
-            yield interaction.reply({ content: `Ticket ${ticketId} remains open.`, ephemeral: false });
+            const embed = new discord_js_1.MessageEmbed()
+                .setTitle('Ticket Status')
+                .setDescription(`This ticket will not be closed. Please state what issue you are continuing to have.`)
+                .setColor('#c69751');
+            yield interaction.reply({ embeds: [embed], ephemeral: false });
         }
         else if (action === "createticket") {
             const channel = interaction.channel;
@@ -236,13 +240,27 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                 let user = yield userRepository.findOne({ where: { discordId } });
                 if (user) {
                     if (user.isBlacklisted) {
-                        return interaction.reply({ content: 'You are currently blacklisted from creating tickets.', ephemeral: true });
+                        const embed = new discord_js_1.MessageEmbed()
+                            .setTitle('Blacklisted')
+                            .setDescription('You are currently blacklisted from creating tickets.')
+                            .setColor('#FF0000');
+                        return interaction.reply({ embeds: [embed], ephemeral: true });
                     }
-                    if (user.openTickets >= 3) {
-                        return interaction.reply({ content: 'You have reached the maximum number of open tickets.', ephemeral: true });
+                    if (interaction.user.id !== "721017166652244018") {
+                        if (user.openTickets >= 3) {
+                            const embed = new discord_js_1.MessageEmbed()
+                                .setTitle('Maximum Open Tickets')
+                                .setDescription('You have reached the maximum number of open tickets.')
+                                .setColor('#FF0000');
+                            return interaction.reply({ embeds: [embed], ephemeral: true });
+                        }
                     }
                     if (user.totalTickets >= 50) {
-                        return interaction.reply({ content: 'You have reached the maximum number of total tickets. Please contact <@721017166652244018>', ephemeral: true });
+                        const embed = new discord_js_1.MessageEmbed()
+                            .setTitle('Maximum Total Tickets')
+                            .setDescription('You have reached the maximum number of total tickets. Please contact <@721017166652244018>.')
+                            .setColor('#FF0000');
+                        return interaction.reply({ embeds: [embed], ephemeral: true });
                     }
                     user.totalTickets += 1;
                     user.openTickets += 1;
@@ -315,7 +333,11 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                         (0, logger_1.default)(`>  STATUS: ${ticket.status}`, 'log');
                         (0, logger_1.default)(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
                         checkOpenTickets();
-                        yield interaction.reply({ content: `Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`, ephemeral: true });
+                        const embed = new discord_js_1.MessageEmbed()
+                            .setTitle('Ticket Created')
+                            .setDescription(`Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`)
+                            .setColor('#00FF00');
+                        yield interaction.reply({ embeds: [embed], ephemeral: true });
                     }
                     catch (error) {
                         console.error('Error creating ticket:', error);
