@@ -217,7 +217,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
             }), 5000);
         }
         else if (action === "denyClose") {
-            const embed = new discord_js_1.MessageEmbed()
+            const embed = new discord_js_1.EmbedBuilder()
                 .setTitle('Ticket Status')
                 .setDescription(`This ticket will not be closed. Please state what issue you are continuing to have.`)
                 .setColor('#c69751');
@@ -240,7 +240,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                 let user = yield userRepository.findOne({ where: { discordId } });
                 if (user) {
                     if (user.isBlacklisted) {
-                        const embed = new discord_js_1.MessageEmbed()
+                        const embed = new discord_js_1.EmbedBuilder()
                             .setTitle('Blacklisted')
                             .setDescription('You are currently blacklisted from creating tickets.')
                             .setColor('#FF0000');
@@ -248,7 +248,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                     }
                     if (interaction.user.id !== "721017166652244018") {
                         if (user.openTickets >= 3) {
-                            const embed = new discord_js_1.MessageEmbed()
+                            const embed = new discord_js_1.EmbedBuilder()
                                 .setTitle('Maximum Open Tickets')
                                 .setDescription('You have reached the maximum number of open tickets.')
                                 .setColor('#FF0000');
@@ -256,7 +256,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                         }
                     }
                     if (user.totalTickets >= 50) {
-                        const embed = new discord_js_1.MessageEmbed()
+                        const embed = new discord_js_1.EmbedBuilder()
                             .setTitle('Maximum Total Tickets')
                             .setDescription('You have reached the maximum number of total tickets. Please contact <@721017166652244018>.')
                             .setColor('#FF0000');
@@ -333,7 +333,7 @@ exports.bot.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, v
                         (0, logger_1.default)(`>  STATUS: ${ticket.status}`, 'log');
                         (0, logger_1.default)(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
                         checkOpenTickets();
-                        const embed = new discord_js_1.MessageEmbed()
+                        const embed = new discord_js_1.EmbedBuilder()
                             .setTitle('Ticket Created')
                             .setDescription(`Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`)
                             .setColor('#00FF00');

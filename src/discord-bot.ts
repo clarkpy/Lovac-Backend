@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, ChannelType, ActivityType, TextChannel, ThreadChannel, PermissionsBitField, REST, Routes, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Guild, SlashCommandBuilder, MessageEmbed } from "discord.js";
+import { Client, GatewayIntentBits, ChannelType, ActivityType, TextChannel, ThreadChannel, PermissionsBitField, REST, Routes, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Guild, SlashCommandBuilder } from "discord.js";
 import { Ticket } from "./models/Ticket";
 import { Message as TicketMessage } from "./models/Message";
 import { AppDataSource } from "./data-source";
@@ -238,7 +238,7 @@ bot.on("interactionCreate", async (interaction) => {
                 }
             }, 5000);
         } else if (action === "denyClose") {
-            const embed = new MessageEmbed()
+            const embed = new EmbedBuilder()
                 .setTitle('Ticket Status')
                 .setDescription(`This ticket will not be closed. Please state what issue you are continuing to have.`)
                 .setColor('#c69751');
@@ -268,7 +268,7 @@ bot.on("interactionCreate", async (interaction) => {
                 if (user) {
 
                     if (user.isBlacklisted) {
-                        const embed = new MessageEmbed()
+                        const embed = new EmbedBuilder()
                             .setTitle('Blacklisted')
                             .setDescription('You are currently blacklisted from creating tickets.')
                             .setColor('#FF0000');
@@ -278,7 +278,7 @@ bot.on("interactionCreate", async (interaction) => {
                     if (interaction.user.id !== "721017166652244018") {
 
                         if (user.openTickets >= 3) {
-                            const embed = new MessageEmbed()
+                            const embed = new EmbedBuilder()
                                 .setTitle('Maximum Open Tickets')
                                 .setDescription('You have reached the maximum number of open tickets.')
                                 .setColor('#FF0000');
@@ -288,7 +288,7 @@ bot.on("interactionCreate", async (interaction) => {
                     }
 
                     if (user.totalTickets >= 50) {
-                        const embed = new MessageEmbed()
+                        const embed = new EmbedBuilder()
                             .setTitle('Maximum Total Tickets')
                             .setDescription('You have reached the maximum number of total tickets. Please contact <@721017166652244018>.')
                             .setColor('#FF0000');
@@ -376,7 +376,7 @@ bot.on("interactionCreate", async (interaction) => {
                         log(`>  OPENED AT: ${ticket.dateOpened}`, 'log');
                         checkOpenTickets();
 
-                        const embed = new MessageEmbed()
+                        const embed = new EmbedBuilder()
                             .setTitle('Ticket Created')
                             .setDescription(`Hey <@${interaction.user.id}>, your new ticket has been created. <#${thread.id}>`)
                             .setColor('#00FF00');
