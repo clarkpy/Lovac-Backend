@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/snowypy/lovac.git"
+    "url": "git+https://github.com/clarkpy/lovac.git"
   },
   "keywords": [
     "tickets"
@@ -18,9 +18,9 @@
   "author": "snowy",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/snowypy/lovac/issues"
+    "url": "https://github.com/clarkpy/lovac/issues"
   },
-  "homepage": "https://github.com/snowypy/lovac#readme",
+  "homepage": "https://github.com/clarkpy/lovac#readme",
   "dependencies": {
     "@types/cors": "^2.8.17",
     "axios": "^1.7.9",
