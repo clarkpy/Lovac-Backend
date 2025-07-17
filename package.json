@@ -23,7 +23,7 @@
   "homepage": "https://github.com/clarkpy/lovac#readme",
   "dependencies": {
     "@types/cors": "^2.8.17",
-    "axios": "^1.7.9",
+    "axios": "^1.8.2",
     "chalk": "^5.4.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
